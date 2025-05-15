@@ -1,0 +1,89 @@
+# 🚀 Arc: Accelerated Markup Language ✨
+
+![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
+![Markup Language](https://img.shields.io/badge/Language-Markup-blue.svg?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-alpha-orange.svg?style=for-the-badge)
+![MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
+
+Welcome to the `Arc` project! 👋
+
+`Arc`, short for **A**ccelerated Ma**r**kup Language, is a new, high-performance markup language designed for speed and simplicity, as a modern alternative to Markdown. Built with the power and safety of **Rust** 🦀, Arc aims to provide a robust and efficient way to structure human-oriented content.
+
+Markdown is a great tool, but it has its limitations. Including html-resembled content is dangerous, and advance styling such as font size and color is difficult to achieve. `Arc` addresses these issues by providing a safe and extensible markup language.
+
+## 🌟 Features
+
+- ⚡ **Accelerated Parsing:** Leveraging Rust's performance capabilities for fast parsing.
+- 🎯 **Simple Syntax:** Easy to learn and write.
+- 🛡️ **Memory Safe:** Built on Rust's ownership system.
+- ✅ **Extensible:** Designed with future expansion in mind.
+- 📄 **Human-Readable:** Clear and concise syntax.
+
+## 📖 Syntax
+
+Compare with Markdown, here's how you write the a simple sentence in `Arc`:
+
+```markdown
+Hello World.
+```
+
+```arc
+Hello World and I can add a <p> tag safely here.
+```
+
+Notice that the requirement of two spaces at the end of a line to create a new line is gone. `Arc` automatically track for all new line characters and insert `<br />` element accordingly. If you do need to write long strings in multiple lines, use the `\` syntax:
+
+```arc
+This is a very long \
+string \
+so I have to \
+break it into multiple lines.
+```
+
+Most of your favorite markdown syntax still works in `Arc`, with a lot more features added.
+
+```arc
+// all lines start with // are comments
+%[red] this is how to make the entire line red
+%[(255, 0, 0):16:blue] This line now has red text, a font size of 16 and a blue background.
+%[red] The line is red but \(%[blue] this is blue) and this is back to red.
+// in fact, you can nesting as much layer as you want
+%[red] The line is red but \(%[blue] this is blue and \(%[green] this is green) and this is back to blue) and this is back to red.
+```
+
+For a comprehensive list of syntax, check out the [syntax](./SYNTAX.md) page.
+
+## 📦 Installation
+
+(Coming soon - detailed installation instructions will be provided once packages are available.)
+
+For now, you can build from source:
+
+1.  Clone the repository:
+    ```zsh
+    git clone [https://github.com/prismelt/arc.git](https://github.com/prismelt/arc.git)
+    ```
+2.  Navigate to the project directory:
+    ```zsh
+    cd arc
+    ```
+3.  Build the project:
+    ```zsh
+    cargo build --release
+    ```
+
+## 💡 Usage
+
+(Coming soon - detailed usage examples and CLI instructions will be provided.)
+
+Notice: Since the project is still in early development, the only method supported is to compile a single file to html.
+
+```zsh
+arc compile <file-path>
+```
+
+Or
+
+```zsh
+cargo run -- compile <file-path>
+```

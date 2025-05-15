@@ -1,0 +1,10 @@
+[package]
+name = "arc"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dyn-clone = "1.0.19"
+fancy-regex = "0.14.0"
+maud = "0.27.0"
+clap = { version = "4", features = ["derive"] }
