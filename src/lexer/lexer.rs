@@ -17,6 +17,7 @@ pub struct Lexer {
 pub struct RegexPattern {
     regex: Regex,
     handler: Box<dyn LexerHandler>,
+    start_of_line: bool,
 }
 
 impl Clone for RegexPattern {
@@ -24,13 +25,18 @@ impl Clone for RegexPattern {
         RegexPattern {
             regex: self.regex.clone(),
             handler: clone_box(&*self.handler),
+            start_of_line: self.start_of_line,
         }
     }
 }
 
 impl RegexPattern {
-    fn new(regex: Regex, handler: Box<dyn LexerHandler>) -> Self {
-        Self { regex, handler }
+    fn new(regex: Regex, handler: Box<dyn LexerHandler>, start_of_line: bool) -> Self {
+        Self {
+            regex,
+            handler,
+            start_of_line,
+        }
     }
 
     fn non_capture_handler(kind: TokenKind) -> Box<dyn LexerHandler> {
@@ -124,69 +130,89 @@ impl Lexer {
                 RegexPattern::new(
                     Regex::new(r"\n").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::EndOfLine),
+                    false,
                 ),
                 // RegexPattern::new(
                 //     Regex::new(r"\\[\s]*\n").unwrap(),
                 //     RegexPattern::skip_handler(),
                 // ),
-                RegexPattern::new(Regex::new(r"^\s+").unwrap(), RegexPattern::skip_handler()),
                 RegexPattern::new(
-                    Regex::new(r"&\[((?:https?:\/\/)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*)\]")
-                        .unwrap(),
+                    Regex::new(r"^\s+").unwrap(),
+                    RegexPattern::skip_handler(),
+                    true,
+                ),
+                RegexPattern::new(
+                    Regex::new(
+                        r"&\[((?:https?:\/\/)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*)\] ?",
+                    )
+                    .unwrap(),
                     RegexPattern::capture_handler(TokenKind::Link),
+                    false,
                 ),
                 RegexPattern::new(
                     Regex::new(r"@\[(.*?)\] ?'(.*?)'").unwrap(),
                     RegexPattern::definition_handler(String::from("-@[]")),
+                    true,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"%\[(.*?)\]").unwrap(),
+                    Regex::new(r"%\[(.*?)\] ?").unwrap(),
                     RegexPattern::capture_handler(TokenKind::CharacterStyle),
+                    false,
                 ),
                 RegexPattern::new(
                     Regex::new(r"<meta ([^\n]*)/>").unwrap(),
                     RegexPattern::capture_handler(TokenKind::MetaData),
+                    true,
                 ),
                 RegexPattern::new(
                     Regex::new(r"<meta ([^\n]*)>").unwrap(),
                     RegexPattern::capture_handler(TokenKind::MetaData),
+                    true,
                 ),
                 RegexPattern::new(
                     Regex::new(r"\\\)").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::LiteralRightParenthesis),
+                    false,
                 ),
                 RegexPattern::new(
                     Regex::new(r"\\\(").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::BackSlashLeftParenthesisInline),
+                    false,
                 ),
                 RegexPattern::new(
                     Regex::new(r"\*\*(.*?)\*\*").unwrap(),
                     RegexPattern::capture_handler(TokenKind::Bold),
+                    false,
                 ),
                 RegexPattern::new(
                     Regex::new(r"^(#{1,4})\s+").unwrap(),
                     RegexPattern::capture_handler(TokenKind::Heading),
+                    true,
                 ),
                 RegexPattern::new(
                     Regex::new(r"^\d+\.\s+").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::OrderedList),
+                    true,
                 ),
                 RegexPattern::new(
                     Regex::new(r"^-\s+").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::UnorderedList),
+                    true,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"(?<!~)~(?!~)").unwrap(),
+                    Regex::new(r"(?<!~)~(?!~) ?").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::Italic),
+                    false,
                 ),
                 RegexPattern::new(
                     Regex::new(r"\)").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::RightParenthesis),
+                    false,
                 ),
                 RegexPattern::new(
-                    // todo: try this regex
                     Regex::new(r"(?:(?!\*\*|\\\()[^)\n])+").unwrap(),
                     RegexPattern::string_handler(),
+                    false,
                 ),
             ],
             source,
@@ -198,34 +224,48 @@ impl Lexer {
         let start_time = Instant::now();
 
         self.preprocess();
-        let patterns_clone = self.patterns.clone();
-        while !self.at_eof() {
-            // Check if we've exceeded the timeout
+        let patterns_start_of_line = self.patterns.clone();
+        let patterns_not_start_of_line = self
+            .patterns
+            .iter()
+            .filter(|p| !p.start_of_line)
+            .cloned()
+            .collect::<Vec<RegexPattern>>();
+        let mut previous_token_is_eol = true;
+
+        'outer: while !self.at_eof() {
             if start_time.elapsed() > timeout {
-                panic!("Tokenization timed out after 20 seconds");
+                panic!("Tokenization timed out after 1 seconds");
             }
 
-            let mut matched = false;
             let mut reminder = String::new();
             self.reminder().clone_into(&mut reminder);
 
-            for pattern in &patterns_clone {
-                if let Ok(Some(loc)) = pattern.regex.find(reminder.as_str()) {
+            let patterns_clone = if previous_token_is_eol {
+                &patterns_start_of_line
+            } else {
+                &patterns_not_start_of_line
+            };
+
+            for pattern in patterns_clone {
+                if let Ok(Some(loc)) = pattern.regex.find(&reminder) {
                     if loc.start() == 0 {
-                        matched = true;
                         let matched_str = &pattern.regex;
+                        if matched_str.as_str().len() == 0 {
+                            panic!("Lexer: tokenize: zero length match");
+                        }
                         // println!("Matched: {:?}", pattern.regex);
                         (pattern.handler)(&mut self, matched_str);
-                        break;
+                        previous_token_is_eol =
+                            self.token.last().unwrap().kind == TokenKind::EndOfLine;
+                        continue 'outer;
                     }
                 }
             }
-            if !matched {
-                panic!(
-                    "No pattern matched at position {}, reminder: {}",
-                    self.position, reminder
-                );
-            }
+            panic!(
+                "No pattern matched at position {}, reminder: {}",
+                self.position, reminder
+            );
         }
         self.push(Token::new(TokenKind::EOF, None));
         self.token

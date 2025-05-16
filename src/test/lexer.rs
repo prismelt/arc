@@ -125,6 +125,10 @@ fn test_complex_structure_tokenization_1() {
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
 
+    for token in &tokens {
+        println!("{:#?}", token);
+    }
+
     assert_eq!(tokens.len(), 6);
     assert_eq!(tokens[0].kind, TokenKind::String);
     assert_eq!(tokens[0].value, Some("Hello World".to_string()));
@@ -140,7 +144,7 @@ fn test_complex_structure_tokenization_1() {
 
 #[test]
 fn test_complex_structure_tokenization_2() {
-    let source = "&[www.google.com/path/to/page] some char \n %[::red] some text next **bold**\n@[term] 'definition'".to_string();
+    let source = "&[www.google.com/path/to/page]  some char \n %[::red] some text next **bold**\n@[term] 'definition'".to_string();
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
 
@@ -151,7 +155,7 @@ fn test_complex_structure_tokenization_2() {
         Some("www.google.com/path/to/page".to_string())
     );
     assert_eq!(tokens[1].kind, TokenKind::String);
-    assert_eq!(tokens[1].value, Some("some char ".to_string()));
+    assert_eq!(tokens[1].value, Some(" some char ".to_string()));
     assert_eq!(tokens[2].kind, TokenKind::EndOfLine);
     assert_eq!(tokens[3].kind, TokenKind::CharacterStyle);
     assert_eq!(tokens[3].value, Some("::red".to_string()));
@@ -185,16 +189,16 @@ fn test_nested_parentheses() {
     assert_eq!(tokens[0].value, Some("text ".to_string()));
     assert_eq!(tokens[1].kind, TokenKind::BackSlashLeftParenthesisInline);
     assert_eq!(tokens[2].kind, TokenKind::String);
-    assert_eq!(tokens[2].value, Some("text ".to_string()));
+    assert_eq!(tokens[2].value, Some(" text ".to_string()));
     assert_eq!(tokens[3].kind, TokenKind::BackSlashLeftParenthesisInline);
     assert_eq!(tokens[4].kind, TokenKind::String);
-    assert_eq!(tokens[4].value, Some("text ".to_string()));
+    assert_eq!(tokens[4].value, Some(" text ".to_string()));
     assert_eq!(tokens[5].kind, TokenKind::RightParenthesis);
     assert_eq!(tokens[6].kind, TokenKind::String);
-    assert_eq!(tokens[6].value, Some("text ".to_string()));
+    assert_eq!(tokens[6].value, Some(" text ".to_string()));
     assert_eq!(tokens[7].kind, TokenKind::RightParenthesis);
     assert_eq!(tokens[8].kind, TokenKind::String);
-    assert_eq!(tokens[8].value, Some("text".to_string()));
+    assert_eq!(tokens[8].value, Some(" text".to_string()));
     assert_eq!(tokens[9].kind, TokenKind::EOF);
 }
 
@@ -210,7 +214,7 @@ fn test_bold_tokenization() {
     assert_eq!(tokens[1].kind, TokenKind::Bold);
     assert_eq!(tokens[1].value, Some("bold text".to_string()));
     assert_eq!(tokens[2].kind, TokenKind::String);
-    assert_eq!(tokens[2].value, Some("here".to_string()));
+    assert_eq!(tokens[2].value, Some(" here".to_string()));
     assert_eq!(tokens[3].kind, TokenKind::EOF);
 }
 

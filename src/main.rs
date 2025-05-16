@@ -25,9 +25,9 @@ fn main() {
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
 
-    for token in &tokens {
-        println!("{:#?}", token);
-    }
+    // for token in &tokens {
+    //     println!("{:#?}", token);
+    // }
 
     let parser = Parser::new(tokens);
     let document = parser.parse();

@@ -169,7 +169,7 @@ fn test_complex_expression_2() {
 
 #[test]
 fn test_complex_expression_3() {
-    let source = String::from("~ %[red] some char \\(&[www.google.com/path/to/page] some char) ");
+    let source = String::from("~ %[red] some char \\(&[www.google.com/path/to/page] some char)");
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
 
