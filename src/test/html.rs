@@ -77,6 +77,6 @@ fn test_html_building_6() {
     let html = node.build();
     assert_eq!(
         html.into_string(),
-        "<span style=\"color: rgb(255, 0, 0);font-size: 16px;background-color: rgb(0, 0, 255);\"><span>Hello World</span></span>"
+        "<span class=\"\" style=\"color: rgb(255, 0, 0);font-size: 16px;background-color: rgb(0, 0, 255);\"><span>Hello World</span></span>"
     );
 }

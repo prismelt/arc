@@ -42,6 +42,20 @@ pub enum Indicator {
     EndOfUnorderedList,
 }
 
+struct CSSAttrs {
+    class: Option<String>,
+    style: String,
+}
+
+impl Default for CSSAttrs {
+    fn default() -> Self {
+        Self {
+            class: None,
+            style: String::new(),
+        }
+    }
+}
+
 impl ASTNode {
     pub fn build(&self) -> Markup {
         match self {
@@ -65,11 +79,16 @@ impl ASTNode {
                 }
             },
             ASTNode::Inline { syntax, content } => {
-                let syntax = syntax
-                    .iter()
-                    .map(|s| s.build())
-                    .collect::<Vec<String>>()
-                    .join("");
+                let style =
+                    syntax
+                        .iter()
+                        .map(|s| s.build())
+                        .fold(CSSAttrs::default(), |mut a, n| {
+                            a.class = a.class.or(n.class);
+                            a.style = format!("{}{}", a.style, n.style);
+                            a
+                        });
+                let (class, style) = (style.class.unwrap_or(String::new()), style.style);
                 let content = PreEscaped(
                     content
                         .iter()
@@ -77,14 +96,19 @@ impl ASTNode {
                         .collect::<Vec<String>>()
                         .join(""),
                 );
-                html! { span style=(syntax) { (content) } }
+                html! { span class=(class) style=(style) { (content) } }
             }
             ASTNode::List { syntax, content } => {
-                let syntax = syntax
-                    .iter()
-                    .map(|s| s.build())
-                    .collect::<Vec<String>>()
-                    .join("");
+                let style =
+                    syntax
+                        .iter()
+                        .map(|s| s.build())
+                        .fold(CSSAttrs::default(), |mut a, n| {
+                            a.class = a.class.or(n.class);
+                            a.style = format!("{}{}", a.style, n.style);
+                            a
+                        });
+                let (class, style) = (style.class.unwrap_or(String::new()), style.style);
                 let content = PreEscaped(
                     content
                         .iter()
@@ -92,7 +116,7 @@ impl ASTNode {
                         .collect::<Vec<String>>()
                         .join(""),
                 );
-                html! { li style=(syntax) { (content) } }
+                html! { li class=(class) style=(style) { (content) } }
             }
             ASTNode::Indicator { indicate } => match indicate {
                 Indicator::StartOfOrderedList => html! { (PreEscaped("<ol>")) },
@@ -105,7 +129,7 @@ impl ASTNode {
 }
 
 impl StyledSyntax {
-    fn build(&self) -> String {
+    fn build(&self) -> CSSAttrs {
         match self {
             StyledSyntax::Style((color, size, background)) => {
                 let mut style = String::new();
@@ -118,10 +142,19 @@ impl StyledSyntax {
                 if let Some(background) = background {
                     style.push_str(&format!("background-color: {};", background.build()));
                 }
-                style
+                CSSAttrs {
+                    class: None,
+                    style: style,
+                }
             }
-            StyledSyntax::Heading(level) => format!("class=\"h{}size\"", level),
-            StyledSyntax::Italic => String::from("font-style: italic;"),
+            StyledSyntax::Heading(level) => CSSAttrs {
+                class: Some(format!("h{}size", level)),
+                style: String::new(),
+            },
+            StyledSyntax::Italic => CSSAttrs {
+                class: None,
+                style: String::from("font-style: italic;"),
+            },
         }
     }
 

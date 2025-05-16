@@ -34,7 +34,6 @@ impl RegexPattern {
     }
 
     fn non_capture_handler(kind: TokenKind) -> Box<dyn LexerHandler> {
-        // info: this optimization may not work
         Box::new(move |lexer: &mut Lexer, regex: &Regex| {
             let reminder = lexer.reminder();
             let matched = regex.find(reminder).unwrap().unwrap();
@@ -126,11 +125,11 @@ impl Lexer {
                     Regex::new(r"\n").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::EndOfLine),
                 ),
-                RegexPattern::new(
-                    Regex::new(r"\\[\s]*\n").unwrap(),
-                    RegexPattern::skip_handler(),
-                ),
-                RegexPattern::new(Regex::new(r"\s+").unwrap(), RegexPattern::skip_handler()),
+                // RegexPattern::new(
+                //     Regex::new(r"\\[\s]*\n").unwrap(),
+                //     RegexPattern::skip_handler(),
+                // ),
+                RegexPattern::new(Regex::new(r"^\s+").unwrap(), RegexPattern::skip_handler()),
                 RegexPattern::new(
                     Regex::new(r"&\[((?:https?:\/\/)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*)\]")
                         .unwrap(),
@@ -165,19 +164,19 @@ impl Lexer {
                     RegexPattern::capture_handler(TokenKind::Bold),
                 ),
                 RegexPattern::new(
-                    Regex::new(r"^#([1-4])").unwrap(),
+                    Regex::new(r"^(#{1,4})\s+").unwrap(),
                     RegexPattern::capture_handler(TokenKind::Heading),
                 ),
                 RegexPattern::new(
-                    Regex::new(r"^\d+\.\s?").unwrap(),
+                    Regex::new(r"^\d+\.\s+").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::OrderedList),
                 ),
                 RegexPattern::new(
-                    Regex::new(r"^-\s?").unwrap(),
+                    Regex::new(r"^-\s+").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::UnorderedList),
                 ),
                 RegexPattern::new(
-                    Regex::new(r"~").unwrap(),
+                    Regex::new(r"(?<!~)~(?!~)").unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::Italic),
                 ),
                 RegexPattern::new(
@@ -215,6 +214,7 @@ impl Lexer {
                     if loc.start() == 0 {
                         matched = true;
                         let matched_str = &pattern.regex;
+                        // println!("Matched: {:?}", pattern.regex);
                         (pattern.handler)(&mut self, matched_str);
                         break;
                     }
@@ -232,7 +232,9 @@ impl Lexer {
     }
 
     pub fn preprocess(&mut self) {
-        self.source = self.source.replace("\r\n", "\n");
+        self.source = self.source.replace("\r\n", "\n").replace("\r", "\n");
+        let crlf_regex = Regex::new(r"\\[\s]*\n").unwrap();
+        self.source = crlf_regex.replace_all(&self.source, "").to_string();
         let comment_regex = Regex::new(r"\n?//.*").unwrap();
         self.source = comment_regex.replace_all(&self.source, "").to_string();
     }

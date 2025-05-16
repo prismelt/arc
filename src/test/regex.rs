@@ -86,13 +86,14 @@ fn test_meta_regex_capture_2() {
 
 #[test]
 fn test_tilde_regex() {
-    let regex = Regex::new(r"~").unwrap();
+    let regex = Regex::new(r"(?<!~)~(?!~)").unwrap();
     assert_eq!(regex.find("~").unwrap().unwrap().as_str(), "~");
 }
 
 #[test]
+#[should_panic]
 fn test_tilde_regex_2() {
-    let regex = Regex::new(r"~").unwrap();
+    let regex = Regex::new(r"(?<!~)~(?!~)").unwrap();
     assert_eq!(regex.find("~~").unwrap().unwrap().as_str(), "~");
 }
 
@@ -550,24 +551,4 @@ fn test_color_regex_capture_1() {
         .get(1)
         .unwrap();
     assert_eq!(capture.as_str(), "red:16:(255, 0, 0)");
-}
-
-#[test]
-fn test_heading_capture_1() {
-    let regex = Regex::new(r"^#([1-4])").unwrap();
-    let matched = regex.find("#1 ").unwrap().unwrap();
-    let capture = regex
-        .captures(matched.as_str())
-        .unwrap()
-        .unwrap()
-        .get(1)
-        .unwrap();
-    assert_eq!(capture.as_str(), "1");
-}
-
-#[test]
-#[should_panic]
-fn test_heading_capture_2() {
-    let regex = Regex::new(r"^#([1-4])").unwrap();
-    let _ = regex.find(" #2").unwrap().unwrap();
 }

@@ -11,6 +11,8 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(source: Vec<Token>) -> Self {
+        // println!("{:#?}", source);
+        // panic!("Parser: a bug occurred, infinite loop");
         Self {
             source: source.into_iter().rev().collect(),
             document: Document::init(),
@@ -192,8 +194,7 @@ impl Parser {
                     let level = token
                         .value
                         .expect("Parser: Heading with no internal value")
-                        .parse::<u8>()
-                        .unwrap();
+                        .len() as u8;
                     syntax.push(StyledSyntax::Heading(level));
                 }
                 _ => break,
@@ -270,19 +271,11 @@ impl Parser {
                     } else {
                         None
                     };
-                    // for token in &self.source {
-                    //     token.debug();
-                    // }
-                    // info: here, the source still have a right para and a eof token
                     content_element.push(ASTNode::BlockedContent {
                         content: BlockedContent::Link(src, content),
                     });
                 }
-                _ => {
-                    let token = self.consume();
-                    eprintln!("Parser: perform_parse: {:?}", token);
-                    eprintln!("Not implemented features!")
-                }
+                _ => unreachable!(),
             }
         }
         content_element

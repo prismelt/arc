@@ -49,7 +49,11 @@ impl Document {
                     (PreEscaped(meta))
                     meta charset="UTF-8";
                     link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css";
-                    style { "* { box-sizing: border-box; white-space: pre-wrap; }"}
+                    style { "* { box-sizing: border-box; white-space: pre; }"}
+                    style { ".h1size { font-size: 2em; }"}
+                    style { ".h2size { font-size: 1.5em; }"}
+                    style { ".h3size { font-size: 1.25em; }"}
+                    style { ".h4size { font-size: 1.125em; }"}
                 }
                 body {
                     (PreEscaped(nodes))
@@ -57,5 +61,7 @@ impl Document {
             }
         )
         .into_string()
+        .replace(r#"class="""#, "")
+        .replace(r#"style="""#, "")
     }
 }

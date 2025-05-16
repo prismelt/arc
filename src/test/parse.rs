@@ -1,4 +1,6 @@
 #![cfg(test)]
+use core::panic;
+
 use crate::lexer::lexer::Lexer;
 use crate::parse::meta::MetaProperties;
 use crate::parse::node::ASTNode;
@@ -234,10 +236,11 @@ fn test_definition_2() {
 
 #[test]
 fn test_heading_1() {
-    let source = "#1 Hello World".to_string();
+    let source = "# Hello World".to_string();
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
     let parser = Parser::new(tokens);
+
     let document = parser.parse();
 
     assert_eq!(document.nodes.len(), 1);
@@ -251,7 +254,7 @@ fn test_heading_1() {
 
 #[test]
 fn test_multiple_headings() {
-    let source = "#1 Hello World\n#2 This is next line".to_string();
+    let source = "# Hello World\n## This is next line".to_string();
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
     let parser = Parser::new(tokens);
@@ -354,3 +357,40 @@ fn test_unordered_list_1() {
 
     assert_eq!(document.nodes.len(), 5); // 3 list, 2 list indicators
 }
+
+// #[test]
+// fn test_nesting_right_parenthesis() {
+//     let source = String::from(r"\(%[yellow](second time parsing\))");
+//     let lexer = Lexer::new(source);
+//     let tokens = lexer.tokenize();
+//     println!("{:#?}", tokens);
+//     panic!("infinite loop");
+//     let parser = Parser::new(tokens);
+//     let document = parser.parse();
+// }
+
+#[test]
+fn test_triple_tide() {
+    let source = String::from("~~~Hello World~~~");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    assert_eq!(document.nodes.len(), 1);
+    assert_eq!(document.nodes[0].len(), 1);
+    assert_eq!(
+        format!("{:?}", document.nodes[0][0]),
+        "Inline { syntax: [], content: [BlockedContent { content: PlainText(\"~~~Hello World~~~\") }] }"
+    );
+}
+
+// #[test]
+// fn test_whitespace_parsing() {
+//     let source = String::from(r"Hello, **world** here");
+//     let lexer = Lexer::new(source);
+//     let tokens = lexer.tokenize();
+
+//     let parser = Parser::new(tokens);
+//     let document = parser.parse();
+// }

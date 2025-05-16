@@ -24,6 +24,11 @@ fn main() {
     let source = std::fs::read_to_string(&source_dirs).expect("Failed to read file");
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
+
+    for token in &tokens {
+        println!("{:#?}", token);
+    }
+
     let parser = Parser::new(tokens);
     let document = parser.parse();
     let html = document.build();

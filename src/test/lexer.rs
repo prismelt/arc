@@ -253,6 +253,15 @@ fn test_tokenization_stability_2() {
     assert_eq!(tokens[3].value, Some("] some text next".to_string()));
     assert_eq!(tokens[4].kind, TokenKind::EOF);
 }
+
+#[test]
+fn test_heading_with_escape() {
+    let source = String::from("# Hello World");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    assert_ne!(tokens.len(), 2);
+}
+
 // #![cfg(test)]
 
 // use crate::lexer::lexer::Lexer;
