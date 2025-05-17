@@ -1,4 +1,5 @@
 use super::token::{Token, TokenKind};
+use crate::types::constants::*;
 use dyn_clone::{DynClone, clone_box};
 use fancy_regex::Regex;
 use std::time::{Duration, Instant};
@@ -128,7 +129,7 @@ impl Lexer {
             token: Vec::new(),
             patterns: vec![
                 RegexPattern::new(
-                    Regex::new(r"\n").unwrap(),
+                    Regex::new(NEWLINE_REGEX).unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::EndOfLine),
                     false,
                 ),
@@ -137,80 +138,77 @@ impl Lexer {
                 //     RegexPattern::skip_handler(),
                 // ),
                 RegexPattern::new(
-                    Regex::new(r"^\s+").unwrap(),
+                    Regex::new(WHITESPACE_REGEX).unwrap(),
                     RegexPattern::skip_handler(),
                     true,
                 ),
                 RegexPattern::new(
-                    Regex::new(
-                        r"&\[((?:https?:\/\/)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*)\] ?",
-                    )
-                    .unwrap(),
+                    Regex::new(LINK_REGEX).unwrap(),
                     RegexPattern::capture_handler(TokenKind::Link),
                     false,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"@\[(.*?)\] ?'(.*?)'").unwrap(),
+                    Regex::new(DEFINITION_REGEX).unwrap(),
                     RegexPattern::definition_handler(String::from("-@[]")),
                     true,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"%\[(.*?)\] ?").unwrap(),
+                    Regex::new(CHARACTER_STYLE_REGEX).unwrap(),
                     RegexPattern::capture_handler(TokenKind::CharacterStyle),
                     false,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"<meta ([^\n]*)/>").unwrap(),
+                    Regex::new(META_DATA_REGEX_LONG).unwrap(),
                     RegexPattern::capture_handler(TokenKind::MetaData),
                     true,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"<meta ([^\n]*)>").unwrap(),
+                    Regex::new(META_DATA_REGEX_SHORT).unwrap(),
                     RegexPattern::capture_handler(TokenKind::MetaData),
                     true,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"\\\)").unwrap(),
+                    Regex::new(LITERAL_RIGHT_PARENTHESIS_REGEX).unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::LiteralRightParenthesis),
                     false,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"\\\(").unwrap(),
+                    Regex::new(BACKSLASH_LEFT_PARENTHESIS_INLINE_REGEX).unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::BackSlashLeftParenthesisInline),
                     false,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"\*\*(.*?)\*\*").unwrap(),
+                    Regex::new(BOLD_REGEX).unwrap(),
                     RegexPattern::capture_handler(TokenKind::Bold),
                     false,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"^(#{1,4})\s+").unwrap(),
+                    Regex::new(HEADING_REGEX).unwrap(),
                     RegexPattern::capture_handler(TokenKind::Heading),
                     true,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"^\d+\.\s+").unwrap(),
+                    Regex::new(ORDERED_LIST_REGEX).unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::OrderedList),
                     true,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"^-\s+").unwrap(),
+                    Regex::new(UNORDERED_LIST_REGEX).unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::UnorderedList),
                     true,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"(?<!~)~(?!~) ?").unwrap(),
+                    Regex::new(ITALIC_REGEX).unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::Italic),
                     false,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"\)").unwrap(),
+                    Regex::new(RIGHT_PARENTHESIS_REGEX).unwrap(),
                     RegexPattern::non_capture_handler(TokenKind::RightParenthesis),
                     false,
                 ),
                 RegexPattern::new(
-                    Regex::new(r"(?:(?!\*\*|\\\()[^)\n])+").unwrap(),
+                    Regex::new(STRING_REGEX).unwrap(),
                     RegexPattern::string_handler(),
                     false,
                 ),
@@ -273,9 +271,9 @@ impl Lexer {
 
     pub fn preprocess(&mut self) {
         self.source = self.source.replace("\r\n", "\n").replace("\r", "\n");
-        let crlf_regex = Regex::new(r"\\[\s]*\n").unwrap();
+        let crlf_regex = Regex::new(CRLF_REGEX).unwrap();
         self.source = crlf_regex.replace_all(&self.source, "").to_string();
-        let comment_regex = Regex::new(r"\n?//.*").unwrap();
+        let comment_regex = Regex::new(COMMENT_REGEX).unwrap();
         self.source = comment_regex.replace_all(&self.source, "").to_string();
     }
 

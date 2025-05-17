@@ -111,6 +111,10 @@ fn test_meta_tokenization() {
     let tokens = lexer.tokenize();
 
     assert_eq!(tokens.len(), 2);
+    for token in &tokens {
+        println!("{:#?}", token);
+    }
+
     assert_eq!(tokens[0].kind, TokenKind::MetaData);
     assert_eq!(
         tokens[0].value,

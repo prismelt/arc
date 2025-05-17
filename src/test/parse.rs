@@ -1,6 +1,4 @@
 #![cfg(test)]
-use core::panic;
-
 use crate::lexer::lexer::Lexer;
 use crate::parse::meta::MetaProperties;
 use crate::parse::node::ASTNode;
@@ -83,7 +81,7 @@ fn test_basic_parsing_3() {
     );
 }
 
-#[test]
+#[test] // todo: fix this
 fn test_meta_parsing_1() {
     let source = "<meta name=My Document key=value />\nHello World".to_string();
     let lexer = Lexer::new(source);
@@ -104,7 +102,7 @@ fn test_meta_parsing_1() {
     );
 }
 
-#[test]
+#[test] // todo: fix this
 fn test_meta_parsing_2() {
     let source =
         "<meta name=My Document>\n<meta title=TEST />\nHello World\nThis is test".to_string();
@@ -358,16 +356,19 @@ fn test_unordered_list_1() {
     assert_eq!(document.nodes.len(), 5); // 3 list, 2 list indicators
 }
 
-// #[test]
-// fn test_nesting_right_parenthesis() {
-//     let source = String::from(r"\(%[yellow](second time parsing\))");
-//     let lexer = Lexer::new(source);
-//     let tokens = lexer.tokenize();
-//     println!("{:#?}", tokens);
-//     panic!("infinite loop");
-//     let parser = Parser::new(tokens);
-//     let document = parser.parse();
-// }
+#[test]
+fn test_nesting_right_parenthesis() {
+    let source = String::from(r"\(%[yellow](second time parsing\))");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    assert_eq!(
+        format!("{:?}", document.nodes[0][0]),
+        r#"Inline { syntax: [], content: [Inline { syntax: [Style((Some(Literal(Yellow)), None, None))], content: [BlockedContent { content: PlainText("(second time parsing") }, BlockedContent { content: PlainText(")") }] }] }"#
+    );
+}
 
 #[test]
 fn test_triple_tide() {
@@ -384,13 +385,3 @@ fn test_triple_tide() {
         "Inline { syntax: [], content: [BlockedContent { content: PlainText(\"~~~Hello World~~~\") }] }"
     );
 }
-
-// #[test]
-// fn test_whitespace_parsing() {
-//     let source = String::from(r"Hello, **world** here");
-//     let lexer = Lexer::new(source);
-//     let tokens = lexer.tokenize();
-
-//     let parser = Parser::new(tokens);
-//     let document = parser.parse();
-// }
