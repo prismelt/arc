@@ -98,7 +98,21 @@ Certain syntax does not make sense in the inner context, so they are disabled:
 
 ```arc
 The nested \(- element) will not be rendered as a list.
+The nested \(# heading) is treated as a string.
+The nested \(%[red] style) can actually provide style.
 ```
+
+## The whitespace decision
+
+The whitespace in `Arc` is preserved. This means that if you have a lot of spaces in your document, they will be rendered as is. However, we do want to maintain the readability of the raw document, therefore:
+
+- The whitespace after `#` (heading), `-` (unordered list), and `1.` (ordered list) is mandatory. This means that `#heading` is not a valid heading, but will be rendered as a string `# heading`. This allows leading `#`, `-`, and `1.` to be used in the content without causing any parsing issues.
+
+- The whitespace immediately after `~`, which denotes the start of an italic element, is optional. This means that `~italic` is the same as `~ italic`.
+
+- The whitespace between @[term] and 'definition' is optional. This means that `@[term]'definition'` is the same as `@[term] 'definition'`.
+
+- The whitespace inside the `%[style]` is optional (but `2 50` probably won't work). This means that `%[red]` is the same as `%[ red ]`. The whitespace between the closing `]` and actual content is also optional. This means that `%[red]content` is the same as `%[red] content`.
 
 ## We need your help!
 
