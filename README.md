@@ -2,7 +2,7 @@
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Markup Language](https://img.shields.io/badge/Language-Markup-blue.svg?style=for-the-badge)
-![Status](https://img.shields.io/badge/status-alpha-orange.svg?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-beta-orange.svg?style=for-the-badge)
 ![MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
 
 Welcome to the `Arc` project! 👋
