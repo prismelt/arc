@@ -133,10 +133,11 @@ impl Lexer {
                     RegexPattern::non_capture_handler(TokenKind::EndOfLine),
                     false,
                 ),
-                // RegexPattern::new(
-                //     Regex::new(r"\\[\s]*\n").unwrap(),
-                //     RegexPattern::skip_handler(),
-                // ),
+                RegexPattern::new(
+                    Regex::new(TABLE_CONTAINER_REGEX).unwrap(),
+                    RegexPattern::capture_handler(TokenKind::Table),
+                    true,
+                ),
                 RegexPattern::new(
                     Regex::new(WHITESPACE_REGEX).unwrap(),
                     RegexPattern::skip_handler(),

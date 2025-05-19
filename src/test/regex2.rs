@@ -1,0 +1,86 @@
+#![cfg(test)]
+use crate::types::constants::*;
+use fancy_regex::Regex;
+
+#[test]
+fn test_table_container_regex_1() {
+    let regex = Regex::new(TABLE_CONTAINER_REGEX).unwrap();
+    let matched = regex
+        .find("---      table!\n\nHello World\n\n---")
+        .unwrap()
+        .unwrap();
+    assert_eq!(matched.as_str(), "---      table!\n\nHello World\n\n---");
+}
+
+#[test]
+#[should_panic]
+fn test_table_container_regex_2() {
+    let regex = Regex::new(TABLE_CONTAINER_REGEX).unwrap();
+    let _ = regex
+        .find("---      table!\n\nHello World\n\n     ---")
+        .unwrap()
+        .unwrap();
+}
+
+#[test]
+#[should_panic]
+fn test_table_container_regex_3() {
+    let regex = Regex::new(TABLE_CONTAINER_REGEX).unwrap();
+    let _ = regex.find("---table! Hello World\n\n---").unwrap().unwrap();
+}
+
+#[test]
+#[should_panic]
+fn test_table_container_regex_4() {
+    let regex = Regex::new(TABLE_CONTAINER_REGEX).unwrap();
+    let _ = regex
+        .find("---      table!\n\nHello World---")
+        .unwrap()
+        .unwrap();
+}
+
+#[test]
+fn test_table_container_capture_1() {
+    let regex = Regex::new(TABLE_CONTAINER_REGEX).unwrap();
+    let matched = regex
+        .find("---      table!\nHello, world!\nHello World\n\n---")
+        .unwrap()
+        .unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str(), "Hello, world!\nHello World\n");
+}
+
+#[test]
+fn test_table_container_capture_2() {
+    let regex = Regex::new(TABLE_CONTAINER_REGEX).unwrap();
+    let matched = regex
+        .find("---      table!\nHello, world!\n\nHello World\n---")
+        .unwrap()
+        .unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str(), "Hello, world!\n\nHello World");
+}
+
+#[test]
+fn test_multiple_newline_regex_1() {
+    let regex = Regex::new(MULTIPLE_NEWLINE_REGEX).unwrap();
+    let matched = regex.find("\n\n\n\n").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "\n\n\n\n");
+}
+
+#[test]
+#[should_panic]
+fn test_multiple_newline_regex_2() {
+    let regex = Regex::new(MULTIPLE_NEWLINE_REGEX).unwrap();
+    let _ = regex.find("\n").unwrap().unwrap();
+}

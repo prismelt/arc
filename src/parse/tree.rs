@@ -48,7 +48,7 @@ impl Document {
                 head {
                     (PreEscaped(meta))
                     meta charset="UTF-8";
-                    link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css";
+                    // link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css";
                     style { "* { box-sizing: border-box; white-space: pre; }"}
                     style { ".h1size { font-size: 2em; }"}
                     style { ".h2size { font-size: 1.5em; }"}

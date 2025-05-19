@@ -270,6 +270,26 @@ fn test_heading_with_escape() {
     assert_ne!(tokens.len(), 2);
 }
 
+#[test]
+fn test_table_tokenization_1() {
+    let source = String::from("---\ntable!\n\nHello World\n\n---");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0].kind, TokenKind::Table);
+    assert_eq!(tokens[0].value, Some("Hello World\n".to_string()));
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}
+
+#[test]
+fn test_table_tokenization_2() {
+    let source = String::from("---      table!\n\nHello World---");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    assert_ne!(tokens.len(), 2);
+    assert_ne!(tokens[0].kind, TokenKind::Table);
+}
+
 // #![cfg(test)]
 
 // use crate::lexer::lexer::Lexer;

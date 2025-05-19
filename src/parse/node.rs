@@ -17,6 +17,19 @@ pub enum ASTNode {
     Indicator {
         indicate: Indicator,
     },
+    Table {
+        position: (Option<f32>, Option<f32>),
+        content: Vec<Vec<TableContent>>,
+    },
+}
+
+#[derive(Debug)]
+pub struct TableContent {
+    content: Vec<ASTNode>,
+    is_heading: bool,
+    style: String,
+    rowspan: u16,
+    colspan: u16,
 }
 
 #[derive(Debug)]
@@ -56,74 +69,167 @@ impl Default for CSSAttrs {
     }
 }
 
+impl TableContent {
+    pub fn new(content: Vec<ASTNode>, is_heading: bool, style: String) -> Self {
+        Self {
+            content,
+            is_heading,
+            style: format!("{}border: 1px solid #ccc; padding: 10px;", style),
+            rowspan: 1,
+            colspan: 1,
+        }
+    }
+
+    pub fn add_merge_row(&mut self) {
+        self.rowspan += 1;
+    }
+    pub fn add_merge_col(&mut self) {
+        self.colspan += 1;
+    }
+
+    fn build(&self) -> Markup {
+        // self.style = format!("{}border: 1px solid #ccc; padding: 10px;", self.style);
+        if self.is_heading {
+            html! { th colspan=(self.colspan) rowspan=(self.rowspan) style=(self.style) { (PreEscaped(self.content.iter().map(|c| c.build().into_string()).collect::<Vec<String>>().join(""))) } }
+        } else {
+            html! { td colspan=(self.colspan) rowspan=(self.rowspan) style=(self.style) { (PreEscaped(self.content.iter().map(|c| c.build().into_string()).collect::<Vec<String>>().join(""))) } }
+        }
+    }
+}
+
 impl ASTNode {
     pub fn build(&self) -> Markup {
         match self {
-            ASTNode::BlockedContent { content } => match content {
-                BlockedContent::Bold(src) => html! { strong { (src) } },
-                BlockedContent::Link(src, content) => {
-                    let Some(content) = content else {
-                        return html! { a href=(src) { (src) } };
-                    };
-                    html! { a href=(src) { (content) } }
-                }
-                BlockedContent::PlainText(src) => html! { span { (src) } },
-                BlockedContent::Definition(term, definition) => {
-                    html! {
-                        span {
-                            span style="color: red;text-decoration: underline;" { (term) }
-                            ": "
-                            span { (definition) }
-                        }
+            ASTNode::BlockedContent { content } => Self::build_block_content(content),
+            ASTNode::Inline { syntax, content } => Self::build_inline(syntax, content),
+            ASTNode::List { syntax, content } => Self::build_list(syntax, content),
+            ASTNode::Indicator { indicate } => Self::match_indicator(indicate),
+            ASTNode::Table { position, content } => Self::build_table(position, content),
+        }
+    }
+
+    fn resolve_syntax(syntax: &Vec<StyledSyntax>) -> (String, String) {
+        let syntax = syntax
+            .iter()
+            .map(|s| s.build())
+            .fold(CSSAttrs::default(), |mut a, n| {
+                a.class = a.class.or(n.class);
+                a.style = format!("{}{}", a.style, n.style);
+                a
+            });
+
+        (syntax.class.unwrap_or(String::new()), syntax.style)
+    }
+
+    fn iter_build_content(content: &Vec<ASTNode>) -> Markup {
+        PreEscaped(
+            content
+                .iter()
+                .map(|c| c.build().into_string())
+                .collect::<Vec<String>>()
+                .join(""),
+        )
+    }
+
+    fn match_indicator(indicator: &Indicator) -> Markup {
+        match indicator {
+            Indicator::StartOfOrderedList => html! { (PreEscaped("<ol>")) },
+            Indicator::StartOfUnorderedList => html! { (PreEscaped("<ul>")) },
+            Indicator::EndOfOrderedList => html! { (PreEscaped("</ol>")) },
+            Indicator::EndOfUnorderedList => html! { (PreEscaped("</ul>")) },
+        }
+    }
+
+    fn handle_table_position(position: &(Option<f32>, Option<f32>)) -> String {
+        let table_level_styling = if let (Some(width), Some(height)) = position {
+            let width = width * 10.0;
+            let height = height * 10.0;
+            format!("width: {}px; height: {}px;", width, height)
+        } else {
+            String::from("width: 80%; height: auto;")
+        };
+        format!(
+            "{}border: 1px solid #ccc;font-family: Arial, sans-serif;font-size: 14px;border-collapse: collapse;white-space: normal;",
+            table_level_styling
+        )
+    }
+
+    fn build_table(
+        position: &(Option<f32>, Option<f32>),
+        content: &Vec<Vec<TableContent>>,
+    ) -> Markup {
+        html! {
+            table style=(Self::handle_table_position(position)) {
+                tbody style="white-space: normal;" {
+                    @for (i, row) in content.into_iter().enumerate() {
+                        (Self::build_table_row(i, row))
                     }
                 }
-            },
-            ASTNode::Inline { syntax, content } => {
-                let style =
-                    syntax
-                        .iter()
-                        .map(|s| s.build())
-                        .fold(CSSAttrs::default(), |mut a, n| {
-                            a.class = a.class.or(n.class);
-                            a.style = format!("{}{}", a.style, n.style);
-                            a
-                        });
-                let (class, style) = (style.class.unwrap_or(String::new()), style.style);
-                let content = PreEscaped(
-                    content
-                        .iter()
-                        .map(|c| c.build().into_string())
-                        .collect::<Vec<String>>()
-                        .join(""),
-                );
-                html! { span class=(class) style=(style) { (content) } }
             }
-            ASTNode::List { syntax, content } => {
-                let style =
-                    syntax
-                        .iter()
-                        .map(|s| s.build())
-                        .fold(CSSAttrs::default(), |mut a, n| {
-                            a.class = a.class.or(n.class);
-                            a.style = format!("{}{}", a.style, n.style);
-                            a
-                        });
-                let (class, style) = (style.class.unwrap_or(String::new()), style.style);
-                let content = PreEscaped(
-                    content
-                        .iter()
-                        .map(|c| c.build().into_string())
-                        .collect::<Vec<String>>()
-                        .join(""),
-                );
-                html! { li class=(class) style=(style) { (content) } }
+        }
+    }
+
+    fn build_table_row(i: usize, row: &Vec<TableContent>) -> Markup {
+        if i == 0 {
+            html! { tr style="background-color: #f4f4f4;white-space: normal;" {
+                @for cell in row {
+                    (cell.build())
+                }
+            }}
+        } else {
+            if i % 2 == 1 {
+                html! { tr style="white-space: normal;" {
+                    @for cell in row {
+                        (cell.build())
+                    }
+                }}
+            } else {
+                html! { tr style="background-color: #f9f9f9;white-space: normal;" {
+                    @for cell in row {
+                        (cell.build())
+                    }
+                }}
             }
-            ASTNode::Indicator { indicate } => match indicate {
-                Indicator::StartOfOrderedList => html! { (PreEscaped("<ol>")) },
-                Indicator::StartOfUnorderedList => html! { (PreEscaped("<ul>")) },
-                Indicator::EndOfOrderedList => html! { (PreEscaped("</ol>")) },
-                Indicator::EndOfUnorderedList => html! { (PreEscaped("</ul>")) },
-            },
+        }
+    }
+
+    fn build_list(syntax: &Vec<StyledSyntax>, content: &Vec<ASTNode>) -> Markup {
+        let (class, style) = Self::resolve_syntax(syntax);
+        let content = Self::iter_build_content(content);
+        html! { li class=(class) style=(style) { (content) } }
+    }
+
+    fn build_inline(syntax: &Vec<StyledSyntax>, content: &Vec<ASTNode>) -> Markup {
+        let (class, style) = Self::resolve_syntax(syntax);
+        let content = Self::iter_build_content(content);
+        html! { span class=(class) style=(style) { (content) } }
+    }
+
+    fn build_link(src: &str, content: &Option<String>) -> Markup {
+        match content {
+            Some(content) => html! { a href=(src) { (content) } },
+            None => html! { a href=(src) { (src) } },
+        }
+    }
+
+    fn build_definition(term: &str, definition: &str) -> Markup {
+        html! {
+            span {
+                span style="color: red;text-decoration: underline;" { (term) }
+                ": "
+                span { (definition) }
+            }
+        }
+    }
+
+    fn build_block_content(content: &BlockedContent) -> Markup {
+        match content {
+            BlockedContent::Bold(src) => html! { strong { (src) } },
+            BlockedContent::Link(src, content) => Self::build_link(src, content),
+            BlockedContent::PlainText(src) => html! { span { (src) } },
+            BlockedContent::Definition(term, definition) => {
+                Self::build_definition(term, definition)
+            }
         }
     }
 }

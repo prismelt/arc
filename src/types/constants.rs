@@ -16,3 +16,6 @@ pub const ITALIC_REGEX: &str = r"(?<!~)~(?!~) ?";
 pub const RIGHT_PARENTHESIS_REGEX: &str = r"\)";
 pub const CRLF_REGEX: &str = r"\\[\s]*\n";
 pub const COMMENT_REGEX: &str = r"\n?//.*";
+pub const TABLE_CONTAINER_REGEX: &str = r"(?ms)^---\s*table!\s*\n(?P<content>.*?)\n---\s*$";
+pub const MULTIPLE_NEWLINE_REGEX: &str = r"\n{2,}";
+pub const WIDTH_HEIGHT_REGEX: &str = r"\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*\)";

@@ -1,5 +1,6 @@
 use super::meta::MetaProperties;
 use super::node::{ASTNode, BlockedContent, Indicator, StyledSyntax};
+use super::table::parse_table;
 use super::tree::Document;
 use crate::lexer::token::{Token, TokenKind};
 
@@ -39,6 +40,11 @@ impl Parser {
                         });
                         let result = self.parse_line();
                         line.push(result);
+                    }
+                    &TokenKind::Table => {
+                        let token = self.consume();
+                        let src = token.value.expect("Parser: Table with no internal value");
+                        parse_table(src, &mut self.document);
                     }
                     _ => {
                         let result = self.parse_line();
