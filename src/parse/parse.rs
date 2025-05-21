@@ -46,6 +46,15 @@ impl Parser {
                         let src = token.value.expect("Parser: Table with no internal value");
                         parse_table(src, &mut self.document);
                     }
+                    &TokenKind::BlockMath => {
+                        let token = self.consume();
+                        let src = token
+                            .value
+                            .expect("Parser: BlockMath with no internal value");
+                        line.push(ASTNode::BlockedContent {
+                            content: BlockedContent::BlockMath(src),
+                        });
+                    }
                     _ => {
                         let result = self.parse_line();
                         line.push(result);
@@ -279,6 +288,15 @@ impl Parser {
                     };
                     content_element.push(ASTNode::BlockedContent {
                         content: BlockedContent::Link(src, content),
+                    });
+                }
+                &TokenKind::InlineMath => {
+                    let token = self.consume();
+                    let src = token
+                        .value
+                        .expect("Parser: InlineMath with no internal value");
+                    content_element.push(ASTNode::BlockedContent {
+                        content: BlockedContent::InlineMath(src),
                     });
                 }
                 _ => unreachable!(),

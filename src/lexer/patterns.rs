@@ -107,6 +107,14 @@ impl<L: LexerTrait> RegexPattern<L> {
                 RegexPattern::capture_handler(TokenKind::Table),
             ),
             RegexPattern::new(
+                Regex::new(BLOCK_MATH_REGEX).unwrap(),
+                RegexPattern::capture_handler(TokenKind::BlockMath),
+            ),
+            RegexPattern::new(
+                Regex::new(INLINE_MATH_REGEX).unwrap(),
+                RegexPattern::capture_handler(TokenKind::InlineMath),
+            ),
+            RegexPattern::new(
                 Regex::new(WHITESPACE_REGEX).unwrap(),
                 RegexPattern::<Lexer>::skip_handler(),
             ),
@@ -166,6 +174,15 @@ impl<L: LexerTrait> RegexPattern<L> {
                 Regex::new(STRING_REGEX).unwrap(),
                 RegexPattern::string_handler(),
             ),
+        ]
+    }
+
+    pub fn get_inline_regex() -> [RegexPattern<L>; 11] {
+        [
+            RegexPattern::new(
+                Regex::new(NEWLINE_REGEX).unwrap(),
+                RegexPattern::non_capture_handler(TokenKind::EndOfLine),
+            ),
             RegexPattern::new(
                 Regex::new(INLINE_MATH_REGEX).unwrap(),
                 RegexPattern::capture_handler(TokenKind::InlineMath),
@@ -173,15 +190,6 @@ impl<L: LexerTrait> RegexPattern<L> {
             RegexPattern::new(
                 Regex::new(BLOCK_MATH_REGEX).unwrap(),
                 RegexPattern::capture_handler(TokenKind::BlockMath),
-            ),
-        ]
-    }
-
-    pub fn get_inline_regex() -> [RegexPattern<L>; 10] {
-        [
-            RegexPattern::new(
-                Regex::new(NEWLINE_REGEX).unwrap(),
-                RegexPattern::non_capture_handler(TokenKind::EndOfLine),
             ),
             RegexPattern::new(
                 Regex::new(LINK_REGEX).unwrap(),
@@ -214,10 +222,6 @@ impl<L: LexerTrait> RegexPattern<L> {
             RegexPattern::new(
                 Regex::new(STRING_REGEX).unwrap(),
                 RegexPattern::string_handler(),
-            ),
-            RegexPattern::new(
-                Regex::new(INLINE_MATH_REGEX).unwrap(),
-                RegexPattern::capture_handler(TokenKind::InlineMath),
             ),
         ]
     }

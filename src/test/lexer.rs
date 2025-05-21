@@ -290,6 +290,36 @@ fn test_table_tokenization_2() {
     assert_ne!(tokens[0].kind, TokenKind::Table);
 }
 
+#[test]
+fn test_math_regex_1() {
+    let source = String::from("<math x = 1/>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0].kind, TokenKind::InlineMath);
+    assert_eq!(tokens[0].value, Some("x = 1".to_string()));
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}
+
+#[test]
+fn test_math_regex_2() {
+    let source = String::from("<math> x = 1 <math/>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0].kind, TokenKind::BlockMath);
+    assert_eq!(tokens[0].value, Some("x = 1".to_string()));
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}
+
+#[test]
+fn test_inline_regex_inline() {
+    let source = String::from("Hello, here's <math x = 1/>, goodbye!");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    assert_ne!(tokens.len(), 2);
+}
+
 // #![cfg(test)]
 
 // use crate::lexer::lexer::Lexer;

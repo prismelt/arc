@@ -386,3 +386,47 @@ fn test_triple_tide() {
         "Inline { syntax: [], content: [BlockedContent { content: PlainText(\"~~~Hello World~~~\") }] }"
     );
 }
+
+#[test]
+fn test_parsing_math_1() {
+    let source = String::from("<math> x = 1 <math/>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    let html = document.build();
+    assert!(html.contains("<span>$$x = 1$$</span>"));
+}
+
+#[test]
+fn test_parsing_math_2() {
+    let source = String::from("<math x = 1/>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    let html = document.build();
+    assert!(html.contains("<span>\\(x = 1\\)</span>"));
+}
+
+#[test]
+fn test_parsing_math_3() {
+    let source = String::from("Hello World <math x = 1/>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    let html = document.build();
+    assert!(html.contains("<span>\\(x = 1\\)</span>"));
+}
+
+#[test]
+#[should_panic]
+fn test_invalid_math() {
+    let source = String::from("math <math> x = 1 <math/> cannot exist inLine");
+    let lexer = Lexer::new(source);
+    let _ = lexer.tokenize();
+}

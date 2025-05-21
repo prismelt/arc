@@ -45,6 +45,8 @@ pub enum BlockedContent {
     Definition(String, String),
     Link(String, Option<String>),
     PlainText(String),
+    BlockMath(String),
+    InlineMath(String),
 }
 
 #[derive(Debug)]
@@ -204,6 +206,12 @@ impl ASTNode {
             BlockedContent::PlainText(src) => html! { span { (src) } },
             BlockedContent::Definition(term, definition) => {
                 Self::build_definition(term, definition)
+            }
+            BlockedContent::InlineMath(src) => {
+                html! { span { (PreEscaped(format!(r"\({}\)", src))) } }
+            }
+            BlockedContent::BlockMath(src) => {
+                html! { span { (PreEscaped(format!(r"$${}$$", src))) } }
             }
         }
     }

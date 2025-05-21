@@ -84,3 +84,72 @@ fn test_multiple_newline_regex_2() {
     let regex = Regex::new(MULTIPLE_NEWLINE_REGEX).unwrap();
     let _ = regex.find("\n").unwrap().unwrap();
 }
+
+#[test]
+#[should_panic]
+fn test_math_1() {
+    let regex = Regex::new(INLINE_MATH_REGEX).unwrap();
+    let matched = regex.find("<math x = 1>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<math x = 1>");
+}
+
+#[test]
+fn test_math_2() {
+    let regex = Regex::new(INLINE_MATH_REGEX).unwrap();
+    let matched = regex.find("<math x = 1 />").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<math x = 1 />");
+}
+
+#[test]
+#[should_panic]
+fn test_math_regex_capture_1() {
+    let regex = Regex::new(INLINE_MATH_REGEX).unwrap();
+    let matched = regex.find("<math x = 1>").unwrap().unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str(), "x = 1");
+}
+
+#[test]
+fn test_math_regex_capture_2() {
+    let regex = Regex::new(INLINE_MATH_REGEX).unwrap();
+    let matched = regex.find("<math x = 1 />").unwrap().unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str(), "x = 1");
+}
+
+#[test]
+fn test_block_math_1() {
+    let regex = Regex::new(BLOCK_MATH_REGEX).unwrap();
+    let matched = regex.find("<math>\nx = 1\n<math/>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<math>\nx = 1\n<math/>");
+}
+
+#[test]
+fn test_block_math_2() {
+    let regex = Regex::new(BLOCK_MATH_REGEX).unwrap();
+    let matched = regex.find("<math>\nx = 1\n<math/>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<math>\nx = 1\n<math/>");
+}
+
+#[test]
+fn test_block_math_regex_capture_1() {
+    let regex = Regex::new(BLOCK_MATH_REGEX).unwrap();
+    let matched = regex.find("<math>\nx = 1\n<math/>").unwrap().unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str(), "x = 1");
+}
