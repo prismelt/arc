@@ -1,7 +1,7 @@
 #![cfg(test)]
-
 use crate::lexer::lexer::Lexer;
 use crate::lexer::token::TokenKind;
+use crate::lexer::traits::LexerTrait;
 
 #[test]
 fn test_basic_tokenization_1() {

@@ -1,235 +1,31 @@
+use super::patterns::RegexPattern;
 use super::token::{Token, TokenKind};
-use crate::types::constants::*;
-use dyn_clone::{DynClone, clone_box};
+use super::traits::LexerTrait;
+use crate::types::constants::{COMMENT_REGEX, CRLF_REGEX};
 use fancy_regex::Regex;
 use std::time::{Duration, Instant};
 
-trait LexerHandler: DynClone + Fn(&mut Lexer, &Regex) {}
-impl<T> LexerHandler for T where T: DynClone + Fn(&mut Lexer, &Regex) {}
-dyn_clone::clone_trait_object!(LexerHandler);
-
 pub struct Lexer {
     pub token: Vec<Token>,
-    patterns: Vec<RegexPattern>,
     source: String,
     position: usize,
 }
 
-pub struct RegexPattern {
-    regex: Regex,
-    handler: Box<dyn LexerHandler>,
-    start_of_line: bool,
-}
-
-impl Clone for RegexPattern {
-    fn clone(&self) -> Self {
-        RegexPattern {
-            regex: self.regex.clone(),
-            handler: clone_box(&*self.handler),
-            start_of_line: self.start_of_line,
-        }
-    }
-}
-
-impl RegexPattern {
-    fn new(regex: Regex, handler: Box<dyn LexerHandler>, start_of_line: bool) -> Self {
-        Self {
-            regex,
-            handler,
-            start_of_line,
-        }
-    }
-
-    fn non_capture_handler(kind: TokenKind) -> Box<dyn LexerHandler> {
-        Box::new(move |lexer: &mut Lexer, regex: &Regex| {
-            let reminder = lexer.reminder();
-            let matched = regex.find(reminder).unwrap().unwrap();
-            let length = matched.range().len();
-            if length == 0 {
-                panic!("Lexer: non_capture_handler: zero length match");
-            }
-            lexer.push(Token::new(kind.clone(), None));
-            lexer.advance_n(length);
-        })
-    }
-
-    fn capture_handler(kind: TokenKind) -> Box<dyn LexerHandler> {
-        Box::new(move |lexer: &mut Lexer, regex: &Regex| {
-            let reminder = lexer.reminder();
-            let matched = regex.find(reminder).unwrap().unwrap();
-            let length = matched.range().len();
-            if length == 0 {
-                panic!("Lexer: capture_handler: zero length match");
-            }
-            let matched = matched.as_str();
-            let capture = regex
-                .captures(matched)
-                .unwrap()
-                .unwrap()
-                .get(1)
-                .unwrap()
-                .as_str();
-            lexer.push(Token::new(kind.clone(), Some(capture.to_string())));
-            lexer.advance_n(length);
-        })
-    }
-
-    fn skip_handler() -> Box<dyn LexerHandler> {
-        Box::new(move |lexer: &mut Lexer, regex: &Regex| {
-            let matched = regex.find(lexer.reminder()).unwrap().unwrap();
-            if matched.range().len() == 0 {
-                panic!("Lexer: skip_handler: zero length match");
-            }
-            lexer.advance_n(matched.range().len());
-        })
-    }
-
-    fn definition_handler(delimiter: String) -> Box<dyn LexerHandler> {
-        Box::new(move |lexer: &mut Lexer, regex: &Regex| {
-            let reminder = lexer.reminder();
-            let matched = regex.find(reminder).unwrap().unwrap();
-            let length = matched.range().len();
-            if length == 0 {
-                panic!("Lexer: definition_handler: zero length match");
-            }
-            let matched = matched.as_str();
-            let captures = regex.captures(matched).unwrap().unwrap();
-            let words = captures.get(1).unwrap().as_str();
-            let expression = captures.get(2).unwrap().as_str();
-            lexer.push(Token::new(
-                TokenKind::Definition,
-                Some(format!("{}{}{}", words, delimiter, expression)),
-            ));
-            lexer.advance_n(length);
-        })
-    }
-
-    fn string_handler() -> Box<dyn LexerHandler> {
-        Box::new(move |lexer: &mut Lexer, regex: &Regex| {
-            let reminder = lexer.reminder();
-            let match_result = regex.find(reminder).unwrap().unwrap();
-            let matched_slice = match_result.as_str();
-            let advance_len = matched_slice.len();
-            if advance_len == 0 {
-                panic!("Lexer: string_handler: zero length match");
-            }
-            lexer.push(Token::new(
-                TokenKind::String,
-                Some(matched_slice.to_string()),
-            ));
-
-            lexer.advance_n(advance_len);
-        })
-    }
-}
-
-impl Lexer {
-    pub fn new(source: String) -> Self {
+impl LexerTrait for Lexer {
+    fn new(source: String) -> Self {
         Self {
             token: Vec::new(),
-            patterns: vec![
-                RegexPattern::new(
-                    Regex::new(NEWLINE_REGEX).unwrap(),
-                    RegexPattern::non_capture_handler(TokenKind::EndOfLine),
-                    false,
-                ),
-                RegexPattern::new(
-                    Regex::new(TABLE_CONTAINER_REGEX).unwrap(),
-                    RegexPattern::capture_handler(TokenKind::Table),
-                    true,
-                ),
-                RegexPattern::new(
-                    Regex::new(WHITESPACE_REGEX).unwrap(),
-                    RegexPattern::skip_handler(),
-                    true,
-                ),
-                RegexPattern::new(
-                    Regex::new(LINK_REGEX).unwrap(),
-                    RegexPattern::capture_handler(TokenKind::Link),
-                    false,
-                ),
-                RegexPattern::new(
-                    Regex::new(DEFINITION_REGEX).unwrap(),
-                    RegexPattern::definition_handler(String::from("-@[]")),
-                    true,
-                ),
-                RegexPattern::new(
-                    Regex::new(CHARACTER_STYLE_REGEX).unwrap(),
-                    RegexPattern::capture_handler(TokenKind::CharacterStyle),
-                    false,
-                ),
-                RegexPattern::new(
-                    Regex::new(META_DATA_REGEX_LONG).unwrap(),
-                    RegexPattern::capture_handler(TokenKind::MetaData),
-                    true,
-                ),
-                RegexPattern::new(
-                    Regex::new(META_DATA_REGEX_SHORT).unwrap(),
-                    RegexPattern::capture_handler(TokenKind::MetaData),
-                    true,
-                ),
-                RegexPattern::new(
-                    Regex::new(LITERAL_RIGHT_PARENTHESIS_REGEX).unwrap(),
-                    RegexPattern::non_capture_handler(TokenKind::LiteralRightParenthesis),
-                    false,
-                ),
-                RegexPattern::new(
-                    Regex::new(BACKSLASH_LEFT_PARENTHESIS_INLINE_REGEX).unwrap(),
-                    RegexPattern::non_capture_handler(TokenKind::BackSlashLeftParenthesisInline),
-                    false,
-                ),
-                RegexPattern::new(
-                    Regex::new(BOLD_REGEX).unwrap(),
-                    RegexPattern::capture_handler(TokenKind::Bold),
-                    false,
-                ),
-                RegexPattern::new(
-                    Regex::new(HEADING_REGEX).unwrap(),
-                    RegexPattern::capture_handler(TokenKind::Heading),
-                    true,
-                ),
-                RegexPattern::new(
-                    Regex::new(ORDERED_LIST_REGEX).unwrap(),
-                    RegexPattern::non_capture_handler(TokenKind::OrderedList),
-                    true,
-                ),
-                RegexPattern::new(
-                    Regex::new(UNORDERED_LIST_REGEX).unwrap(),
-                    RegexPattern::non_capture_handler(TokenKind::UnorderedList),
-                    true,
-                ),
-                RegexPattern::new(
-                    Regex::new(ITALIC_REGEX).unwrap(),
-                    RegexPattern::non_capture_handler(TokenKind::Italic),
-                    false,
-                ),
-                RegexPattern::new(
-                    Regex::new(RIGHT_PARENTHESIS_REGEX).unwrap(),
-                    RegexPattern::non_capture_handler(TokenKind::RightParenthesis),
-                    false,
-                ),
-                RegexPattern::new(
-                    Regex::new(STRING_REGEX).unwrap(),
-                    RegexPattern::string_handler(),
-                    false,
-                ),
-            ],
             source,
             position: 0,
         }
     }
-    pub fn tokenize(mut self) -> Vec<Token> {
+    fn tokenize(mut self) -> Vec<Token> {
         let timeout = Duration::from_secs(1);
         let start_time = Instant::now();
 
         self.preprocess();
-        let patterns_start_of_line = self.patterns.clone();
-        let patterns_not_start_of_line = self
-            .patterns
-            .iter()
-            .filter(|p| !p.start_of_line)
-            .cloned()
-            .collect::<Vec<RegexPattern>>();
+        let patterns_start_of_line = RegexPattern::<Lexer>::get_full_regex();
+        let patterns_not_start_of_line = RegexPattern::<Lexer>::get_inline_regex();
         let mut previous_token_is_eol = true;
 
         'outer: while !self.at_eof() {
@@ -237,10 +33,9 @@ impl Lexer {
                 panic!("Tokenization timed out after 1 seconds");
             }
 
-            let mut reminder = String::new();
-            self.reminder().clone_into(&mut reminder);
+            let reminder = self.reminder();
 
-            let patterns_clone = if previous_token_is_eol {
+            let patterns_clone: &[RegexPattern<Lexer>] = if previous_token_is_eol {
                 &patterns_start_of_line
             } else {
                 &patterns_not_start_of_line
@@ -253,7 +48,6 @@ impl Lexer {
                         if matched_str.as_str().len() == 0 {
                             panic!("Lexer: tokenize: zero length match");
                         }
-                        // println!("Matched: {:?}", pattern.regex);
                         (pattern.handler)(&mut self, matched_str);
                         previous_token_is_eol =
                             self.token.last().unwrap().kind == TokenKind::EndOfLine;
@@ -270,7 +64,19 @@ impl Lexer {
         self.token
     }
 
-    pub fn preprocess(&mut self) {
+    fn reminder(&self) -> &str {
+        &self.source[self.position..]
+    }
+    fn advance_n(&mut self, n: usize) {
+        self.position += n;
+    }
+    fn push(&mut self, token: Token) {
+        self.token.push(token);
+    }
+}
+
+impl Lexer {
+    fn preprocess(&mut self) {
         self.source = self.source.replace("\r\n", "\n").replace("\r", "\n");
         let crlf_regex = Regex::new(CRLF_REGEX).unwrap();
         self.source = crlf_regex.replace_all(&self.source, "").to_string();
@@ -278,17 +84,8 @@ impl Lexer {
         self.source = comment_regex.replace_all(&self.source, "").to_string();
     }
 
-    fn advance_n(&mut self, n: usize) {
-        self.position += n;
-    }
-    fn push(&mut self, token: Token) {
-        self.token.push(token);
-    }
     fn at_eof(&self) -> bool {
         self.position >= self.source.len()
-    }
-    fn reminder(&self) -> &str {
-        &self.source[self.position..]
     }
 }
 

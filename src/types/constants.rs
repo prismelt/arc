@@ -19,3 +19,5 @@ pub const COMMENT_REGEX: &str = r"\n?//.*";
 pub const TABLE_CONTAINER_REGEX: &str = r"(?ms)^---\s*table!\s*\n(?P<content>.*?)\n---\s*$";
 pub const MULTIPLE_NEWLINE_REGEX: &str = r"\n{2,}";
 pub const WIDTH_HEIGHT_REGEX: &str = r"\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*\)";
+pub const INLINE_MATH_REGEX: &str = r"<math\s+(?<content>.*?)(?:\s*\/)?(?:\s*\/)?\s*>";
+pub const BLOCK_MATH_REGEX: &str = r"<math>\s*(?<content>[\s\S]*?)\s*<math\s*/>";

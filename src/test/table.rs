@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use crate::lexer::lexer::Lexer;
+use crate::lexer::traits::LexerTrait;
 use crate::parse::parse::Parser;
 
 fn dedent(text: &str) -> String {

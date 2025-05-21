@@ -5,6 +5,7 @@ mod parse;
 mod test;
 mod types;
 
+use crate::lexer::traits::LexerTrait;
 use args::Args;
 use clap::Parser as _;
 use lexer::lexer::Lexer;

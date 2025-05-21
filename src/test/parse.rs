@@ -1,5 +1,6 @@
 #![cfg(test)]
 use crate::lexer::lexer::Lexer;
+use crate::lexer::traits::LexerTrait;
 use crate::parse::meta::MetaProperties;
 use crate::parse::node::ASTNode;
 use crate::parse::parse::Parser;

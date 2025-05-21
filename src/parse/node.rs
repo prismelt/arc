@@ -74,7 +74,7 @@ impl TableContent {
         Self {
             content,
             is_heading,
-            style: format!("{}border: 1px solid #ccc; padding: 10px;", style),
+            style,
             rowspan: 1,
             colspan: 1,
         }
@@ -88,7 +88,6 @@ impl TableContent {
     }
 
     fn build(&self) -> Markup {
-        // self.style = format!("{}border: 1px solid #ccc; padding: 10px;", self.style);
         if self.is_heading {
             html! { th colspan=(self.colspan) rowspan=(self.rowspan) style=(self.style) { (PreEscaped(self.content.iter().map(|c| c.build().into_string()).collect::<Vec<String>>().join(""))) } }
         } else {
@@ -141,17 +140,13 @@ impl ASTNode {
     }
 
     fn handle_table_position(position: &(Option<f32>, Option<f32>)) -> String {
-        let table_level_styling = if let (Some(width), Some(height)) = position {
+        if let (Some(width), Some(height)) = position {
             let width = width * 10.0;
             let height = height * 10.0;
             format!("width: {}px; height: {}px;", width, height)
         } else {
-            String::from("width: 80%; height: auto;")
-        };
-        format!(
-            "{}border: 1px solid #ccc;font-family: Arial, sans-serif;font-size: 14px;border-collapse: collapse;white-space: normal;",
-            table_level_styling
-        )
+            String::from("width: auto; height: auto;")
+        }
     }
 
     fn build_table(
@@ -160,35 +155,15 @@ impl ASTNode {
     ) -> Markup {
         html! {
             table style=(Self::handle_table_position(position)) {
-                tbody style="white-space: normal;" {
-                    @for (i, row) in content.into_iter().enumerate() {
-                        (Self::build_table_row(i, row))
+                tbody {
+                    @for row in content {
+                        tr {
+                            @for cell in row {
+                                (cell.build())
+                            }
+                        }
                     }
                 }
-            }
-        }
-    }
-
-    fn build_table_row(i: usize, row: &Vec<TableContent>) -> Markup {
-        if i == 0 {
-            html! { tr style="background-color: #f4f4f4;white-space: normal;" {
-                @for cell in row {
-                    (cell.build())
-                }
-            }}
-        } else {
-            if i % 2 == 1 {
-                html! { tr style="white-space: normal;" {
-                    @for cell in row {
-                        (cell.build())
-                    }
-                }}
-            } else {
-                html! { tr style="background-color: #f9f9f9;white-space: normal;" {
-                    @for cell in row {
-                        (cell.build())
-                    }
-                }}
             }
         }
     }

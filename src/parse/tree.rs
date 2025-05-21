@@ -1,5 +1,6 @@
 use super::meta::MetaProperties;
 use super::node::ASTNode;
+use crate::types::style::STYLE;
 use maud::{DOCTYPE, PreEscaped, html};
 
 #[derive(Debug)]
@@ -44,16 +45,12 @@ impl Document {
             .join("<br />");
         html!(
             (DOCTYPE)
-            html {
+            html lang="en" {
                 head {
                     (PreEscaped(meta))
                     meta charset="UTF-8";
-                    // link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css";
-                    style { "* { box-sizing: border-box; white-space: pre; }"}
-                    style { ".h1size { font-size: 2em; }"}
-                    style { ".h2size { font-size: 1.5em; }"}
-                    style { ".h3size { font-size: 1.25em; }"}
-                    style { ".h4size { font-size: 1.125em; }"}
+                    script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" {}
+                    style { (PreEscaped(STYLE)) }
                 }
                 body {
                     (PreEscaped(nodes))

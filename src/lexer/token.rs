@@ -26,6 +26,8 @@ pub enum TokenKind {
     String,                  // ((?:[^()\\*]|\*(?:[^*]|$))+)
     Link,                    // &[url] ==> &\[https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*\]
     Table,
+    InlineMath,
+    BlockMath,
 }
 
 impl Token {

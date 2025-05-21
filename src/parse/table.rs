@@ -1,6 +1,7 @@
 use super::node::{ASTNode, TableContent};
 use super::tree::Document;
-use crate::lexer::lexer::Lexer;
+use crate::lexer::lexer_lite::LexerLite;
+use crate::lexer::traits::LexerTrait;
 use crate::types::constants::{MULTIPLE_NEWLINE_REGEX, WIDTH_HEIGHT_REGEX};
 use fancy_regex::Regex;
 
@@ -52,7 +53,7 @@ pub fn parse_table(src: String, document: &mut Document) {
                 continue 'inner;
             }
 
-            let lexer = Lexer::new(content);
+            let lexer = LexerLite::new(content);
             let tokens = lexer.tokenize();
             let parser = super::parse::Parser::new(tokens);
             let content = parser.parse().nodes.pop().expect("Empty table cell");
