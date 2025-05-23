@@ -28,6 +28,7 @@ pub enum TokenKind {
     Table,
     InlineMath,
     BlockMath,
+    HorizontalLine,
 }
 
 impl Token {

@@ -167,3 +167,31 @@ fn test_anti_meta_regex_2() {
     let regex = Regex::new(ANTI_META_REGEX).unwrap();
     let _ = regex.find("<body> <br /><br /><br />").unwrap().unwrap();
 }
+
+#[test]
+fn test_horizontal_line_regex_1() {
+    let regex = Regex::new(HORIZONTAL_LINE_REGEX).unwrap();
+    let matched = regex.find("---").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "---");
+}
+
+#[test]
+fn test_horizontal_line_regex_2() {
+    let regex = Regex::new(HORIZONTAL_LINE_REGEX).unwrap();
+    let matched = regex.find("----").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "----");
+}
+
+#[test]
+fn test_horizontal_line_regex_3() {
+    let regex = Regex::new(HORIZONTAL_LINE_REGEX).unwrap();
+    let matched = regex.find("-----").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "-----");
+}
+
+#[test]
+#[should_panic]
+fn test_invalid_horizontal_line_regex_1() {
+    let regex = Regex::new(HORIZONTAL_LINE_REGEX).unwrap();
+    let _ = regex.find("some text \\(---)").unwrap().unwrap();
+}

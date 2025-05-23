@@ -21,6 +21,7 @@ pub const MULTIPLE_NEWLINE_REGEX: &str = r"\n{2,}";
 pub const WIDTH_HEIGHT_REGEX: &str = r"\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*\)";
 pub const INLINE_MATH_REGEX: &str = r"<math\s+(?<content>.*?)\s*\/\s*>";
 pub const BLOCK_MATH_REGEX: &str = r"<math>\s*(?<content>[\s\S]*?)\s*</math>";
+pub const HORIZONTAL_LINE_REGEX: &str = r"^-{3,}";
 pub const ANTI_META_REGEX: &str = r"<body>(<br \/>)+";
 // pub const REPLACE_REGEX: &str =
 //     r#"class=""|style=""|<span><span>|</span></span>|</ol><br />|</ul><br />"#;

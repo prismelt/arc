@@ -1,6 +1,6 @@
 #![cfg(test)]
 use crate::lexer::lexer::Lexer;
-use crate::lexer::token::TokenKind;
+use crate::lexer::token::{Token, TokenKind};
 use crate::lexer::traits::LexerTrait;
 
 #[test]
@@ -318,6 +318,24 @@ fn test_inline_regex_inline() {
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
     assert_ne!(tokens.len(), 2);
+}
+
+#[test]
+fn test_horizontal_line_1() {
+    let source = String::from("---");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0].kind, TokenKind::HorizontalLine);
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}
+
+#[test]
+fn test_invalid_horizontal_line_1() {
+    let source = String::from("some text \\(---)");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    assert!(!tokens.contains(&Token::new(TokenKind::HorizontalLine, None)));
 }
 
 // #![cfg(test)]

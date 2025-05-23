@@ -55,6 +55,12 @@ impl Parser {
                             content: BlockedContent::BlockMath(src),
                         });
                     }
+                    &TokenKind::HorizontalLine => {
+                        let _ = self.consume();
+                        line.push(ASTNode::Indicator {
+                            indicate: Indicator::HorizontalLine,
+                        });
+                    }
                     _ => {
                         let result = self.parse_line();
                         line.push(result);
@@ -69,7 +75,6 @@ impl Parser {
         self.postprocess()
     }
 
-    // todo: fix this
     fn postprocess(mut self) -> Document {
         let mut new_nodes: Vec<Vec<ASTNode>> = Vec::new();
         self.document.nodes = self.document.nodes.into_iter().rev().collect();

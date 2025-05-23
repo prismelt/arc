@@ -55,6 +55,7 @@ pub enum Indicator {
     StartOfUnorderedList,
     EndOfOrderedList,
     EndOfUnorderedList,
+    HorizontalLine,
 }
 
 struct CSSAttrs {
@@ -138,6 +139,7 @@ impl ASTNode {
             Indicator::StartOfUnorderedList => html! { (PreEscaped("<ul>")) },
             Indicator::EndOfOrderedList => html! { (PreEscaped("</ol>")) },
             Indicator::EndOfUnorderedList => html! { (PreEscaped("</ul>")) },
+            Indicator::HorizontalLine => html! { (PreEscaped("<hr />")) },
         }
     }
 

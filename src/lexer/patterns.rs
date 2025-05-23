@@ -96,7 +96,7 @@ impl<L: LexerTrait> RegexPattern<L> {
         })
     }
 
-    pub fn get_full_regex() -> [RegexPattern<Lexer>; 19] {
+    pub fn get_full_regex() -> [RegexPattern<Lexer>; 20] {
         [
             RegexPattern::new(
                 Regex::new(NEWLINE_REGEX).unwrap(),
@@ -105,6 +105,10 @@ impl<L: LexerTrait> RegexPattern<L> {
             RegexPattern::new(
                 Regex::new(TABLE_CONTAINER_REGEX).unwrap(),
                 RegexPattern::capture_handler(TokenKind::Table),
+            ),
+            RegexPattern::new(
+                Regex::new(HORIZONTAL_LINE_REGEX).unwrap(),
+                RegexPattern::non_capture_handler(TokenKind::HorizontalLine),
             ),
             RegexPattern::new(
                 Regex::new(BLOCK_MATH_REGEX).unwrap(),

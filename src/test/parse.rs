@@ -3,6 +3,7 @@ use crate::lexer::lexer::Lexer;
 use crate::lexer::traits::LexerTrait;
 use crate::parse::meta::MetaProperties;
 use crate::parse::node::ASTNode;
+use crate::parse::node::Indicator;
 use crate::parse::parse::Parser;
 
 #[test]
@@ -454,4 +455,55 @@ fn test_ordered_with_unordered_list() {
     let document = parser.parse();
 
     assert_eq!(document.nodes.len(), 10);
+}
+
+#[test]
+fn test_horizontal_line_1() {
+    let source = String::from("---");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    assert_eq!(document.nodes.len(), 1);
+    assert_eq!(document.nodes[0].len(), 1);
+    assert_eq!(
+        format!("{:?}", document.nodes[0][0]),
+        "Indicator { indicate: HorizontalLine }"
+    );
+}
+
+#[test]
+fn test_horizontal_line_2() {
+    let source = String::from("Hello World\n---\nThis is next line");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    assert_eq!(document.nodes.len(), 3);
+    assert_eq!(document.nodes[1].len(), 1);
+    assert_eq!(
+        format!("{:?}", document.nodes[1][0]),
+        "Indicator { indicate: HorizontalLine }"
+    );
+}
+
+#[test]
+fn test_invalid_horizontal_line_1() {
+    let source = String::from("some text \\(---)");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    let contains_horizontal = document.nodes.iter().any(|node| match node.as_slice() {
+        [
+            ASTNode::Indicator {
+                indicate: Indicator::HorizontalLine,
+            },
+        ] => true,
+        _ => false,
+    });
+    assert!(!contains_horizontal);
 }
