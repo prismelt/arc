@@ -43,11 +43,11 @@ break it into multiple lines.
 Most of your favorite markdown syntax still works in `Arc`, with a lot more features added.
 
 ```arc
-// all lines start with // are comments
+/// all lines start with /// are comments
 %[red] this is how to make the entire line red
 %[(255, 0, 0):16:blue] This line now has red text, a font size of 16 and a blue background.
 %[red] The line is red but \(%[blue] this is blue) and this is back to red.
-// in fact, you can nesting as much layer as you want
+/// in fact, you can nesting as much layer as you want
 %[red] The line is red but \(%[blue] this is blue and \(%[green] this is green) and this is back to blue) and this is back to red.
 ```
 
@@ -72,18 +72,16 @@ For now, you can build from source:
     cargo build --release
     ```
 
-## 💡 Usage
-
-(Coming soon - detailed usage examples and CLI instructions will be provided.)
-
-Notice: Since the project is still in early development, the only method supported is to compile a single file to html.
+## 💡 CLI tool usage
 
 ```zsh
-arc compile <file-path>
+# output directory is optional, it will overwrite the <meta name=... /> tag.
+arc compile -o <output directory> <file> # compile to html
+arc preview <file> # render the file directly in the browser
 ```
 
-Or
+More CIL coming soon!
 
-```zsh
-cargo run -- compile <file-path>
-```
+## 📜 License
+
+This project is licensed under the MIT License.

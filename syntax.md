@@ -4,7 +4,7 @@ Most of the syntax in `Arc` is similar to Markdown, with a few exceptions.
 
 ## Comments
 
-Comments are denoted by `//`. Anything after `//` on a line is ignored.
+Comments are denoted by `///`. Anything after `///` on a line is ignored.
 
 ## Meta Data
 
@@ -104,7 +104,7 @@ The nested \(%[red] style) can actually provide style.
 
 ## The whitespace decision
 
-The whitespace in `Arc` is preserved. This means that if you have a lot of spaces in your document, they will be rendered as is. However, we do want to maintain the readability of the raw document, therefore:
+The whitespace in `Arc` is preserved. This means that if you have any number of consecutive spaces in your document, they will be rendered as is. However, we do want to maintain the readability of the raw document, therefore:
 
 - The whitespace after `#` (heading), `-` (unordered list), and `1.` (ordered list) is mandatory. This means that `#heading` is not a valid heading, but will be rendered as a string `# heading`. This allows leading `#`, `-`, and `1.` to be used in the content without causing any parsing issues.
 
@@ -114,14 +114,31 @@ The whitespace in `Arc` is preserved. This means that if you have a lot of space
 
 - The whitespace inside the `%[style]` is optional (but `2 50` probably won't work). This means that `%[red]` is the same as `%[ red ]`. The whitespace between the closing `]` and actual content is also optional. This means that `%[red]content` is the same as `%[red] content`.
 
-## We need your help!
+## Advanced Syntax
 
-This is just the beginning. We need your help to make this project a success. If you have any ideas, suggestions, or feedback, please open an issue or pull request.
+### Horizontal Line
 
-The next stage of the project is to implement executable support. We want to be able to write code in the document and have it executed, or write html and let it rendered as is.
+The horizontal line is denoted by `---`. Include `---` within `\()`, `table` or other sub-elements will not be rendered as a horizontal line.
 
-The exact syntax still need to be determined.
+### Table
 
-For example, should we use `<code lang=some-language> </code>` to define a code block? Or should we use `code! { }` to define a code block?
+The table is denoted by `--- table!`. The table is terminated by `---`. The table syntax is defined by a series of rows, separated by a newline. Each row is defined by a series of cells, separated by a `;`. The first row is the heading row, and is denoted by `[...]`. The heading row is optional.
 
-Please share your ideas and feedback via [GitHub Discussions](https://github.com/prismelt/arc/discussions).
+The following features are supported:
+
+- Merging cells: use `_` to merge the current cell with the cell to its left, use `^` to merge the current cell with the cell above it.
+- Styling: use `%[style]` to style the current cell. The style syntax is the same as the character style.
+- The element within each cell is recursively parsed just like a normal inline element. All the syntax allow within `\()` is available within the table cell.
+- Notice that creating multiple table can be computational expensive. For each cell, a lexer-lite instance is generated.
+
+### Math
+
+Use `<math ... />` to create an inline math element. Use `<math> ... </math>` to create a block math element. The content inside math element is rendered as is, without any parsing.
+
+## Bad Syntax
+
+Bad syntax could cause certain issues in Arc. Most of them will just be treated as string, however, certain error could cause undefined behavior, such as unclosed `\(` and `)` may lead to infinite loop. And invalid math tag could cause panic.
+
+We do try to add timeout to prevent infinite loop, however, it's not actually working yet.
+
+### More syntax coming soon!
