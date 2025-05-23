@@ -69,6 +69,7 @@ impl Parser {
         self.postprocess()
     }
 
+    // todo: fix this
     fn postprocess(mut self) -> Document {
         let mut new_nodes: Vec<Vec<ASTNode>> = Vec::new();
         self.document.nodes = self.document.nodes.into_iter().rev().collect();
@@ -94,12 +95,16 @@ impl Parser {
                         }]);
                         break 'outer;
                     }
-                    let mut line = self.document.nodes.pop().unwrap();
-                    if line.is_empty() {
-                        new_nodes.push(line);
+                    let line_type: &Vec<ASTNode> =
+                        &self.document.nodes[self.document.nodes.len() - 1];
+
+                    if line_type.is_empty() {
+                        self.document.nodes.pop();
                         continue 'inner;
-                    } else if !matches!(
-                        line[0],
+                    }
+
+                    if !matches!(
+                        line_type[0],
                         ASTNode::Indicator {
                             indicate: Indicator::StartOfOrderedList
                         }
@@ -107,9 +112,9 @@ impl Parser {
                         new_nodes.push(vec![ASTNode::Indicator {
                             indicate: Indicator::EndOfOrderedList,
                         }]);
-                        new_nodes.push(line);
                         break 'inner;
                     } else {
+                        let mut line = self.document.nodes.pop().unwrap();
                         let _ = line.remove(0);
                         new_nodes.push(line);
                         continue 'inner;
@@ -135,12 +140,16 @@ impl Parser {
                         }]);
                         break 'outer;
                     }
-                    let mut line = self.document.nodes.pop().unwrap();
-                    if line.is_empty() {
-                        new_nodes.push(line);
+                    let line_type: &Vec<ASTNode> =
+                        &self.document.nodes[self.document.nodes.len() - 1];
+
+                    if line_type.is_empty() {
+                        self.document.nodes.pop();
                         continue 'inner;
-                    } else if !matches!(
-                        line[0],
+                    }
+
+                    if !matches!(
+                        line_type[0],
                         ASTNode::Indicator {
                             indicate: Indicator::StartOfUnorderedList
                         }
@@ -148,9 +157,9 @@ impl Parser {
                         new_nodes.push(vec![ASTNode::Indicator {
                             indicate: Indicator::EndOfUnorderedList,
                         }]);
-                        new_nodes.push(line);
                         break 'inner;
                     } else {
+                        let mut line = self.document.nodes.pop().unwrap();
                         let _ = line.remove(0);
                         new_nodes.push(line);
                         continue 'inner;

@@ -82,7 +82,7 @@ fn test_basic_parsing_3() {
     );
 }
 
-#[test] // todo: fix this
+#[test]
 fn test_meta_parsing_1() {
     let source = "<meta name=My Document key=value />\nHello World".to_string();
     let lexer = Lexer::new(source);
@@ -103,7 +103,7 @@ fn test_meta_parsing_1() {
     );
 }
 
-#[test] // todo: fix this
+#[test]
 fn test_meta_parsing_2() {
     let source =
         "<meta name=My Document>\n<meta title=TEST />\nHello World\nThis is test".to_string();
@@ -331,7 +331,7 @@ fn test_ordered_list_2() {
     let parser = Parser::new(tokens);
     let document = parser.parse();
 
-    assert_eq!(document.nodes.len(), 7); // 4 list, 2 list indicators, 1 empty line, 1 list
+    assert_eq!(document.nodes.len(), 6);
 }
 
 #[test]
@@ -389,7 +389,7 @@ fn test_triple_tide() {
 
 #[test]
 fn test_parsing_math_1() {
-    let source = String::from("<math> x = 1 <math/>");
+    let source = String::from("<math> x = 1 </math>");
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
     let parser = Parser::new(tokens);
@@ -424,9 +424,34 @@ fn test_parsing_math_3() {
 }
 
 #[test]
-#[should_panic]
 fn test_invalid_math() {
-    let source = String::from("math <math> x = 1 <math/> cannot exist inLine");
+    let source = String::from("math <math> x = 1 </math> cannot exist inLine");
     let lexer = Lexer::new(source);
-    let _ = lexer.tokenize();
+    let tokens = lexer.tokenize();
+    assert_eq!(tokens.len(), 2);
+}
+
+#[test]
+fn test_inline_math_inline() {
+    let source = String::from("Hello World <math x = 1/> This is next line");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    let html = document.build();
+    assert!(html.contains("<span>\\(x = 1\\)</span>"));
+}
+
+#[test]
+fn test_ordered_with_unordered_list() {
+    let source = String::from(
+        "1. Hello World\n2. This is next line\n3. This is next line\n- This is next line\n- This is next line\n- This is next line",
+    );
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+
+    assert_eq!(document.nodes.len(), 10);
 }

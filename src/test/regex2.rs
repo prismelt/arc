@@ -130,21 +130,21 @@ fn test_math_regex_capture_2() {
 #[test]
 fn test_block_math_1() {
     let regex = Regex::new(BLOCK_MATH_REGEX).unwrap();
-    let matched = regex.find("<math>\nx = 1\n<math/>").unwrap().unwrap();
-    assert_eq!(matched.as_str(), "<math>\nx = 1\n<math/>");
+    let matched = regex.find("<math>\nx = 1\n</math>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<math>\nx = 1\n</math>");
 }
 
 #[test]
 fn test_block_math_2() {
     let regex = Regex::new(BLOCK_MATH_REGEX).unwrap();
-    let matched = regex.find("<math>\nx = 1\n<math/>").unwrap().unwrap();
-    assert_eq!(matched.as_str(), "<math>\nx = 1\n<math/>");
+    let matched = regex.find("<math>\nx = 1\n</math>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<math>\nx = 1\n</math>");
 }
 
 #[test]
 fn test_block_math_regex_capture_1() {
     let regex = Regex::new(BLOCK_MATH_REGEX).unwrap();
-    let matched = regex.find("<math>\nx = 1\n<math/>").unwrap().unwrap();
+    let matched = regex.find("<math>\nx = 1\n</math>").unwrap().unwrap();
     let capture = regex
         .captures(matched.as_str())
         .unwrap()
@@ -152,4 +152,18 @@ fn test_block_math_regex_capture_1() {
         .get(1)
         .unwrap();
     assert_eq!(capture.as_str(), "x = 1");
+}
+
+#[test]
+fn test_anti_meta_regex_1() {
+    let regex = Regex::new(ANTI_META_REGEX).unwrap();
+    let matched = regex.find("<body><br /><br /><br />").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<body><br /><br /><br />");
+}
+
+#[test]
+#[should_panic]
+fn test_anti_meta_regex_2() {
+    let regex = Regex::new(ANTI_META_REGEX).unwrap();
+    let _ = regex.find("<body> <br /><br /><br />").unwrap().unwrap();
 }

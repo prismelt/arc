@@ -1,6 +1,8 @@
 use super::meta::MetaProperties;
 use super::node::ASTNode;
+use crate::types::constants::ANTI_META_REGEX;
 use crate::types::style::STYLE;
+use fancy_regex::Regex;
 use maud::{DOCTYPE, PreEscaped, html};
 
 #[derive(Debug)]
@@ -43,7 +45,7 @@ impl Document {
             })
             .collect::<Vec<String>>()
             .join("<br />");
-        html!(
+        let src = html!(
             (DOCTYPE)
             html lang="en" {
                 head {
@@ -60,5 +62,13 @@ impl Document {
         .into_string()
         .replace(r#"class="""#, "")
         .replace(r#"style="""#, "")
+        .replace("</ol><br />", "</ol>")
+        .replace("</ul><br />", "</ul>")
+        .replace("</table><br /><br />", "</table>")
+        .replace("</li><br />", "</li>")
+        .replace("<ol><br />", "<ol>")
+        .replace("<ul><br />", "<ul>");
+        let regex = Regex::new(ANTI_META_REGEX).unwrap();
+        regex.replace_all(&src, "<body>").to_string()
     }
 }

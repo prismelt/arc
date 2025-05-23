@@ -2,6 +2,7 @@ pub const STYLE: &str = r#"
 * {
   box-sizing: border-box;
   white-space: pre;
+  
 }
 
 :root {
@@ -13,9 +14,13 @@ pub const STYLE: &str = r#"
   --blockquote-color: #6c757d;
 }
 
+ul, ol {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 body {
   color: var(--text-color);
-  background-color: var(--background-color);
   line-height: 1.6;
 }
 

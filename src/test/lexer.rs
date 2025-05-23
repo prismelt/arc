@@ -66,7 +66,7 @@ fn test_basic_tokenization_4() {
 
 #[test]
 fn test_comment_handling() {
-    let source = "Hello World // This is a comment\nHello World".to_string();
+    let source = "Hello World /// This is a comment\nHello World".to_string();
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
 
@@ -81,7 +81,7 @@ fn test_comment_handling() {
 
 #[test]
 fn test_comment_stability() {
-    let source = "some text\n// comment with a ) and \\( \n some text".to_string();
+    let source = "some text\n/// comment with a ) and \\( \n some text".to_string();
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
     assert_eq!(tokens.len(), 4);
@@ -95,7 +95,7 @@ fn test_comment_stability() {
 
 #[test]
 fn test_comment_newline_consume() {
-    let source = "some text\n// a comment".to_string();
+    let source = "some text\n/// a comment".to_string();
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
     assert_eq!(tokens.len(), 2);
@@ -303,7 +303,7 @@ fn test_math_regex_1() {
 
 #[test]
 fn test_math_regex_2() {
-    let source = String::from("<math> x = 1 <math/>");
+    let source = String::from("<math> x = 1 </math>");
     let lexer = Lexer::new(source);
     let tokens = lexer.tokenize();
     assert_eq!(tokens.len(), 2);
