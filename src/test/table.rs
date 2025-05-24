@@ -115,3 +115,19 @@ fn test_meta_styling() {
     let output = document.build();
     assert!(output.contains(r#"width: 125px; height: 224px;"#));
 }
+
+#[test]
+fn test_consecutive_merge() {
+    let src = dedent(
+        "--- table!
+        [Heading 1;Heading 2;Heading 3]
+        Cell 1; _ ; _
+        ---",
+    );
+    let lexer = Lexer::new(src);
+    let tokens = lexer.tokenize();
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+    let output = document.build();
+    assert!(output.contains(r#"colspan="3""#));
+}

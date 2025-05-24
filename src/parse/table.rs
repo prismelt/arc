@@ -1,4 +1,4 @@
-use super::node::{ASTNode, TableContent};
+use super::node::{ASTNode, BlockedContent, TableContent};
 use super::tree::Document;
 use crate::lexer::lexer_lite::LexerLite;
 use crate::lexer::traits::LexerTrait;
@@ -23,7 +23,8 @@ pub fn parse_table(src: String, document: &mut Document) {
         src.remove(0);
     }
 
-    'outer: for (i, line) in src.iter().enumerate() {
+    let mut row_pos = 0;
+    'outer: for line in src {
         let mut line = line.trim();
         if line.is_empty() {
             continue 'outer;
@@ -33,33 +34,51 @@ pub fn parse_table(src: String, document: &mut Document) {
             line = &line[1..line.len() - 1];
         }
         table_content.push(Vec::new());
-        'inner: for (j, cell) in line.split(";").enumerate() {
+
+        let mut col_pos = 0;
+        'inner: for cell in line.split(";") {
             let (content, style) = format_style(cell);
 
             if content.trim() == "_" {
-                table_content[i]
-                    .get_mut(j - 1)
+                table_content[row_pos]
+                    .get_mut(col_pos - 1)
                     .expect("Row merge with no left neighbor")
                     .add_merge_col();
+                // row_pos += 1;
                 continue 'inner;
             }
             if content.trim() == "^" {
                 table_content
-                    .get_mut(i - 1)
+                    .get_mut(row_pos - 1)
                     .expect("Column merge with no upper row")
-                    .get_mut(j)
+                    .get_mut(col_pos)
                     .expect("Column merge with no upper neighbor")
                     .add_merge_row();
+                col_pos += 1;
                 continue 'inner;
             }
 
             let lexer = LexerLite::new(content);
             let tokens = lexer.tokenize();
             let parser = super::parse::Parser::new(tokens);
-            let content = parser.parse().nodes.pop().expect("Empty table cell");
+            let mut nodes = parser.parse().nodes;
+            if nodes.len() == 0 {
+                // info: empty cell, composed with ;; ...
+                table_content[row_pos].push(TableContent::new(
+                    vec![ASTNode::BlockedContent {
+                        content: BlockedContent::PlainText(String::new()),
+                    }],
+                    is_heading,
+                    style,
+                ));
+                continue 'inner;
+            }
+            let content = nodes.pop().unwrap();
 
-            table_content[i].push(TableContent::new(content, is_heading, style));
+            table_content[row_pos].push(TableContent::new(content, is_heading, style));
+            col_pos += 1;
         }
+        row_pos += 1;
     }
 
     document.append_node(vec![ASTNode::Table {

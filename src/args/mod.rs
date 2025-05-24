@@ -1,8 +1,25 @@
-use clap::{Args as ClapArgs, Parser, Subcommand};
+use clap::{Args as ClapArgs, ColorChoice, Parser, Subcommand};
+use colored::*;
 use std::path::PathBuf;
 
+fn command_style(text: &str) -> String {
+    format!("{}", text.green())
+}
+
+fn arg_style(text: &str) -> String {
+    format!("{}", text.cyan())
+}
+
 #[derive(Parser)]
-#[command(author, version, about, long_about = None, name = "arc")]
+#[command(
+    author, 
+    version, 
+    about, 
+    long_about = None, 
+    name = "arc",
+    color = ColorChoice::Auto,
+    disable_help_subcommand = true,
+)]
 pub struct Args {
     #[command(subcommand)]
     pub command: Commands,
@@ -10,24 +27,45 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    #[command(about = "Compile a given file to html")]
+    #[command(about = command_style("Compile a given file to html"))]
     Compile(CompileArgs),
 
-    #[command(about = "Render a given file directly inside the browser")]
+    #[command(about = command_style("Render a given file directly inside the browser"))]
     Preview(PreviewArgs),
+
+    #[command(about = command_style("Build and save the output to a PDF file"))]
+    Build(BuildArgs),
+    
+    #[command(about = command_style("Print this message or the help of the given subcommand(s)"))]
+    Help(HelpArgs),
 }
 
 #[derive(ClapArgs)]
 pub struct CompileArgs {
-    #[arg(help = "Path to the file to compile")]
+    #[arg(help = arg_style("Path to the file to compile"))]
     pub file: PathBuf,
 
-    #[arg(short, long, help = "Path to the output directory")]
+    #[arg(short, long, help = arg_style("Path to the output directory"))]
+    pub output: Option<PathBuf>,
+}
+
+#[derive(ClapArgs)]
+pub struct BuildArgs {
+    #[arg(help = arg_style("Path to the file to build"))]
+    pub file: PathBuf,
+
+    #[arg(short, long, help = arg_style("Path to the output directory"))]
     pub output: Option<PathBuf>,
 }
 
 #[derive(ClapArgs)]
 pub struct PreviewArgs {
-    #[arg(help = "Path to the rendered file")]
+    #[arg(help = arg_style("Path to the rendered file"))]
     pub file: PathBuf,
+}
+
+#[derive(ClapArgs)]
+pub struct HelpArgs {
+    #[arg(help = arg_style("The subcommand whose help message to display"))]
+    pub command: Option<String>,
 }

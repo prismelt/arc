@@ -43,7 +43,7 @@ break it into multiple lines.
 Most of your favorite markdown syntax still works in `Arc`, with a lot more features added.
 
 ```arc
-/// all lines start with /// are comments
+/// use /// to create comments
 %[red] this is how to make the entire line red
 %[(255, 0, 0):16:blue] This line now has red text, a font size of 16 and a blue background.
 %[red] The line is red but \(%[blue] this is blue) and this is back to red.
@@ -75,9 +75,9 @@ For now, you can build from source:
 ## 💡 CLI tool usage
 
 ```zsh
-# output directory is optional, it will overwrite the <meta name=... /> tag.
-arc compile -o <output directory> <file> # compile to html
+arc compile <file> -o <output directory> # compile to html with an optional output path
 arc preview <file> # render the file directly in the browser
+arc build <file> -o <output directory> # build to pdf with an optional output path
 ```
 
 More CIL coming soon!

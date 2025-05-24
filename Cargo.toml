@@ -1,6 +1,6 @@
 [package]
 name = "arc"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 
 [dependencies]
@@ -8,3 +8,5 @@ fancy-regex = "0.14.0"
 maud = "0.27.0"
 clap = { version = "4", features = ["derive"] }
 colored = "3.0.0"
+headless_chrome = "1.0.17"
+tokio = { version = "1", features = ["full"] }
