@@ -69,6 +69,7 @@ table {
   font-size: 14px;
   border-collapse: collapse;
   white-space: normal;
+  margin: 1em 0;
 }
 
 tbody {
