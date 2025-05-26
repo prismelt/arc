@@ -46,10 +46,10 @@ impl MetaProperties {
                 html! { style { "* { font-family: " (family) "; }" } }.into_string()
             }
             MetaProperties::FontSize(size) => {
-                html! { style { "span { font-size: " (size) "px; }" } }.into_string()
+                html! { style { "span, a { font-size: " (size) "px; }" } }.into_string()
             }
             MetaProperties::FontColor(color) => {
-                html! { style { "span { color: " (color.build()) "; }" } }.into_string()
+                html! { style { "span, a { color: " (color.build()) "; }" } }.into_string()
             }
             MetaProperties::BackgroundColor(color) => {
                 html! { style { "html, body, main { background-color: " (color.build()) "; }" } }
@@ -57,10 +57,10 @@ impl MetaProperties {
             }
             MetaProperties::AllowHtml(_) => String::new(),
             MetaProperties::PTagFontSize(size) => {
-                html! { style { "p { font-size: " (size) "px !important; }" } }.into_string()
+                html! { style { "span, a { font-size: " (size) "px !important; }" } }.into_string()
             }
             MetaProperties::PTagFontColor(color) => {
-                html! { style { "p { color: " (color.build()) "; }" } }.into_string()
+                html! { style { "span { color: " (color.build()) "; }" } }.into_string()
             }
             MetaProperties::H1TagFontSize(size) => {
                 html!({ style { ".h1size { font-size: " (size) "px !important; }" } }).into_string()
@@ -119,7 +119,7 @@ impl MetaProperties {
                 }
             }
             "h1-font-size" => Some(MetaProperties::H1TagFontSize(Self::str_to_u8(value))),
-            "h1-color" => {
+            "h1-font-color" => {
                 if let Some(color) = Self::str_to_color(value) {
                     Some(MetaProperties::H1TagFontColor(color))
                 } else {
@@ -127,7 +127,7 @@ impl MetaProperties {
                 }
             }
             "h2-font-size" => Some(MetaProperties::H2TagFontSize(Self::str_to_u8(value))),
-            "h2-color" => {
+            "h2-font-color" => {
                 if let Some(color) = Self::str_to_color(value) {
                     Some(MetaProperties::H2TagFontColor(color))
                 } else {
@@ -135,7 +135,7 @@ impl MetaProperties {
                 }
             }
             "h3-font-size" => Some(MetaProperties::H3TagFontSize(Self::str_to_u8(value))),
-            "h3-color" => {
+            "h3-font-color" => {
                 if let Some(color) = Self::str_to_color(value) {
                     Some(MetaProperties::H3TagFontColor(color))
                 } else {
@@ -143,7 +143,7 @@ impl MetaProperties {
                 }
             }
             "h4-font-size" => Some(MetaProperties::H4TagFontSize(Self::str_to_u8(value))),
-            "h4-color" => {
+            "h4-font-color" => {
                 if let Some(color) = Self::str_to_color(value) {
                     Some(MetaProperties::H4TagFontColor(color))
                 } else {
@@ -156,6 +156,14 @@ impl MetaProperties {
                     "true" => Some(MetaProperties::AllowHtml(true)),
                     "false" => Some(MetaProperties::AllowHtml(false)),
                     _ => panic!("Invalid boolean value for allow-html: {}", value),
+                }
+            }
+            "p-font-size" => Some(MetaProperties::PTagFontSize(Self::str_to_u8(value))),
+            "p-font-color" => {
+                if let Some(color) = Self::str_to_color(value) {
+                    Some(MetaProperties::PTagFontColor(color))
+                } else {
+                    None
                 }
             }
             _ => panic!("Invalid <meta /> property: {}", key),

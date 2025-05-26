@@ -2,7 +2,6 @@ pub const STYLE: &str = r#"
 * {
   box-sizing: border-box;
   white-space: pre;
-  
 }
 
 :root {
@@ -33,34 +32,50 @@ a:hover {
   text-decoration: underline;
 }
 
-code {
-  background-color: var(--code-background);
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-family: monospace;
+span {
+  margin: 0 0.15em;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-blockquote {
-  border-left: 4px solid var(--border-color);
-  margin: 0;
-  padding-left: 1em;
-  color: var(--blockquote-color);
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
 
 .h1size {
   font-size: 2em;
+  white-space: normal !important;
 }
 
 .h2size {
   font-size: 1.5em;
+  white-space: normal !important;
 }
 
 .h3size {
   font-size: 1.25em;
+  white-space: normal !important;
 }
 
 .h4size {
   font-size: 1.125em;
+  white-space: normal !important;
+}
+
+.h1size span {
+  font-size: inherit !important;
+}
+
+.h2size span {
+  font-size: inherit !important; 
+}
+
+.h3size span {
+  font-size: inherit !important; 
+}
+
+.h4size span {
+  font-size: inherit !important;
 }
 
 table {
