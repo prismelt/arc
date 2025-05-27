@@ -16,7 +16,7 @@ fn arg_style(text: &str) -> String {
     version, 
     about, 
     long_about = None, 
-    name = "arc",
+    name = "Accelerated Markup Language",
     color = ColorChoice::Auto,
     disable_help_subcommand = true,
 )]

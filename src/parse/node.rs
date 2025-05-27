@@ -225,13 +225,16 @@ impl StyledSyntax {
             StyledSyntax::Style((color, size, background)) => {
                 let mut style = String::new();
                 if let Some(color) = color {
-                    style.push_str(&format!("color: {};", color.build()));
+                    style.push_str(&format!("color: {} !important;", color.build()));
                 }
                 if let Some(size) = size {
-                    style.push_str(&format!("font-size: {}px;", size));
+                    style.push_str(&format!("font-size: {}px !important;", size));
                 }
                 if let Some(background) = background {
-                    style.push_str(&format!("background-color: {};", background.build()));
+                    style.push_str(&format!(
+                        "background-color: {} !important;",
+                        background.build()
+                    ));
                 }
                 CSSAttrs {
                     class: None,
@@ -244,7 +247,7 @@ impl StyledSyntax {
             },
             StyledSyntax::Italic => CSSAttrs {
                 class: None,
-                style: String::from("font-style: italic;"),
+                style: String::from("font-style: italic !important;"),
             },
         }
     }

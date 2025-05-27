@@ -44,38 +44,62 @@ body {
 
 .h1size {
   font-size: 2em;
-  white-space: normal !important;
 }
 
 .h2size {
   font-size: 1.5em;
-  white-space: normal !important;
 }
 
 .h3size {
   font-size: 1.25em;
-  white-space: normal !important;
 }
 
 .h4size {
   font-size: 1.125em;
-  white-space: normal !important;
 }
 
 .h1size span {
   font-size: inherit !important;
+  color: inherit !important;
+  background-color: inherit !important;
 }
 
 .h2size span {
   font-size: inherit !important; 
+  color: inherit !important;
+  background-color: inherit !important;
 }
 
 .h3size span {
   font-size: inherit !important; 
+  color: inherit !important;
+  background-color: inherit !important;
 }
 
 .h4size span {
   font-size: inherit !important;
+  color: inherit !important;
+  background-color: inherit !important;
+}
+
+.h1size a {
+  font-size: inherit !important;
+  background-color: inherit !important;
+}
+
+.h2size a {
+  font-size: inherit !important;
+  background-color: inherit !important;
+}
+
+.h3size a {
+  font-size: inherit !important;
+  background-color: inherit !important;
+}
+
+.h4size a {
+  font-size: inherit !important;
+  background-color: inherit !important;
 }
 
 table {
