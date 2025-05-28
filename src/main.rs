@@ -7,7 +7,7 @@ mod types;
 use args::{Args, Commands::*};
 use clap::{CommandFactory as _, Parser as _};
 use colored::*;
-use headless_chrome::Browser;
+use headless_chrome::{Browser, LaunchOptionsBuilder};
 use lexer::lexer::Lexer;
 use lexer::traits::LexerTrait as _;
 use parse::meta::MetaProperties;
@@ -189,7 +189,13 @@ async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), Stri
         parent.join(format!("{}.pdf", source_file_stem))
     };
 
-    let browser = Browser::default().map_err(|e| format!("Failed to launch browser: {}", e))?;
+    let browser = Browser::new(
+        LaunchOptionsBuilder::default()
+            .headless(true) // Set to false for visual debugging
+            .build()
+            .map_err(|e| format!("Failed to build launch options: {}", e))?,
+    )
+    .map_err(|e| format!("Failed to launch browser: {}", e))?;
 
     let tab = browser
         .new_tab()
@@ -201,12 +207,18 @@ async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), Stri
     tab.wait_until_navigated()
         .map_err(|e| format!("Failed to wait for navigation: {}", e))?;
 
-    let escaped_html = html.replace('\\', "\\\\").replace('`', "\\`");
+    let escaped_html = html
+        .replace(r"\", r"\\")
+        .replace("'", r"\'")
+        .replace(r#"""#, r#"\""#)
+        .replace("\n", r"\n")
+        .replace("\t", r"\t")
+        .replace("\t", r"\t");
 
     let javascript = format!(
         r#"
         document.open();
-        document.write(`{}`);
+        document.write('{}');
         document.close();
     "#,
         escaped_html
