@@ -21,18 +21,6 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
-fn transpile(source: PathBuf) -> Result<String, String> {
-    let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
-    let lexer = Lexer::new(src.clone());
-    let tokens = lexer.tokenize();
-
-    let parser = Parser::new(tokens);
-    let document = parser.parse();
-    let html = document.build();
-
-    Ok(html)
-}
-
 fn show_err(res: Result<(), String>) {
     if let Err(err) = res {
         eprintln!("{}", err.bold().red());
@@ -44,7 +32,6 @@ fn show_success(msg: &str) {
 }
 
 fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
-    use std::fs;
     let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
     let lexer = Lexer::new(src.clone());
     let tokens = lexer.tokenize();
@@ -90,7 +77,13 @@ fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> 
 }
 
 fn render(source: PathBuf) -> Result<(), String> {
-    let html = transpile(source)?;
+    let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
+    let lexer = Lexer::new(src.clone());
+    let tokens = lexer.tokenize();
+
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+    let html = document.build();
 
     let listener =
         TcpListener::bind("127.0.0.1:0").map_err(|e| format!("Failed to bind to port: {}", e))?;
@@ -171,7 +164,14 @@ fn handle_request(mut stream: TcpStream, html: &str) {
 }
 
 async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
-    let html = transpile(source.clone())?;
+    let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
+    let lexer = Lexer::new(src.clone());
+    let tokens = lexer.tokenize();
+
+    let parser = Parser::new(tokens);
+    let document = parser.parse();
+    let html = document.build();
+
     let pdf_output_path = if let Some(path) = output_path {
         if path.extension().is_some() && path.extension().unwrap() == "pdf" {
             path
@@ -179,14 +179,22 @@ async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), Stri
             path.with_extension("pdf")
         }
     } else {
-        let parent = source.parent().unwrap_or(Path::new(""));
-        let source_file_stem = source
-            .file_stem()
-            .ok_or("Source path has no file name component")?
-            .to_str()
-            .ok_or("Source filename is not valid UTF-8")?;
+        if let Some(MetaProperties::Name(name)) = document
+            .meta
+            .iter()
+            .find(|m| matches!(m, MetaProperties::Name(_)))
+        {
+            PathBuf::from(name).with_extension("pdf")
+        } else {
+            let parent = source.parent().unwrap_or(Path::new(""));
+            let source_file_stem = source
+                .file_stem()
+                .ok_or("Source path has no file name component")?
+                .to_str()
+                .ok_or("Source filename is not valid UTF-8")?;
 
-        parent.join(format!("{}.pdf", source_file_stem))
+            parent.join(format!("{}.pdf", source_file_stem))
+        }
     };
 
     let browser = Browser::new(
