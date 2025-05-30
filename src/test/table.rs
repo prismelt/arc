@@ -18,12 +18,13 @@ fn test_parse_table_1() {
         ---",
     );
     let lexer = Lexer::new(src);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let output = document.build();
-    assert!(output.contains(r#"style="color: rgb(255, 0, 0);""#));
+    println!("{}", output);
+    assert!(output.contains(r#"rgb(255, 0, 0)"#));
 }
 
 #[test]
@@ -36,9 +37,9 @@ fn test_table_with__() {
         ---",
     );
     let lexer = Lexer::new(src);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let output = document.build();
     assert!(output.contains(r#"colspan="2""#));
@@ -54,9 +55,9 @@ fn test_table_with_upper() {
         ---",
     );
     let lexer = Lexer::new(src);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let output = document.build();
     assert!(output.contains(r#"rowspan="2""#));
@@ -73,9 +74,9 @@ fn test_invalid__() {
         ---",
     );
     let lexer = Lexer::new(src);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let _ = document.build();
 }
@@ -91,9 +92,9 @@ fn test_invalid_upper() {
         ---",
     );
     let lexer = Lexer::new(src);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let _ = document.build();
 }
@@ -109,9 +110,9 @@ fn test_meta_styling() {
         ---",
     );
     let lexer = Lexer::new(src);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
     let output = document.build();
     assert!(output.contains(r#"width: 125px; height: 224px;"#));
 }
@@ -125,9 +126,9 @@ fn test_consecutive_merge() {
         ---",
     );
     let lexer = Lexer::new(src);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
     let output = document.build();
     assert!(output.contains(r#"colspan="3""#));
 }

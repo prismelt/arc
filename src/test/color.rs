@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use crate::types::color::Color;
+use crate::utilities::color::Color;
 
 #[test]
 fn test_color_from_string_literal_1() {

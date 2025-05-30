@@ -1,7 +1,7 @@
 use super::meta::MetaProperties;
 use super::node::ASTNode;
-use crate::types::constants::ANTI_META_REGEX;
-use crate::types::style::STYLE;
+use crate::utilities::constants::ANTI_META_REGEX;
+use crate::utilities::style::STYLE;
 use fancy_regex::Regex;
 use maud::{DOCTYPE, PreEscaped, html};
 

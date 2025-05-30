@@ -2,8 +2,6 @@
 
 use crate::parse::node::ASTNode;
 use crate::parse::node::BlockedContent;
-use crate::parse::node::StyledSyntax;
-use crate::types::color::{Color, ColorLiteral};
 
 #[test]
 fn test_html_building_1() {
@@ -59,24 +57,5 @@ fn test_html_building_5() {
     assert_eq!(
         html.into_string(),
         "<span><span style=\"color: red;text-decoration: underline;\">term</span>: <span>definition</span></span>"
-    );
-}
-
-#[test]
-fn test_html_building_6() {
-    let node = ASTNode::Inline {
-        syntax: vec![StyledSyntax::Style((
-            Some(Color::Literal(ColorLiteral::Red)),
-            Some(16),
-            Some(Color::Literal(ColorLiteral::Blue)),
-        ))],
-        content: vec![ASTNode::BlockedContent {
-            content: BlockedContent::PlainText("Hello World".to_string()),
-        }],
-    };
-    let html = node.build();
-    assert_eq!(
-        html.into_string(),
-        "<span class=\"\" style=\"color: rgb(255, 0, 0);font-size: 16px;background-color: rgb(0, 0, 255);\"><span>Hello World</span></span>"
     );
 }

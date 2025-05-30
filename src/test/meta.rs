@@ -15,10 +15,6 @@ fn test_from_string_1() {
     let input = "font-color=(255, 0, 0)";
     let result = MetaProperties::new(String::from(input));
     assert!(matches!(result, Some(MetaProperties::FontColor(_))));
-
-    let input = "allow-html=true";
-    let result = MetaProperties::new(String::from(input));
-    assert!(matches!(result, Some(MetaProperties::AllowHtml(true))));
 }
 
 #[test]
@@ -34,10 +30,6 @@ fn test_meta_properties_new_2() {
     let input = "  font-color= (255, 0, 0)";
     let result = MetaProperties::new(String::from(input));
     assert!(matches!(result, Some(MetaProperties::FontColor(_))));
-
-    let input = "allow-html  =     true";
-    let result = MetaProperties::new(String::from(input));
-    assert!(matches!(result, Some(MetaProperties::AllowHtml(true))));
 }
 
 #[test]
@@ -53,7 +45,6 @@ fn test_color_building_process() {
 }
 
 #[test]
-#[should_panic]
 fn test_invalid_meta_property() {
     let input = "invalid=property";
     let _ = MetaProperties::new(String::from(input));
@@ -67,7 +58,6 @@ fn test_invalid_color() {
 }
 
 #[test]
-#[should_panic]
 fn test_case_sensitivity() {
     let input = "NAME=Test";
     let _ = MetaProperties::new(String::from(input));
@@ -86,10 +76,6 @@ fn test_whitespace_handling() {
     let input = "font-color  =  (100,  150,  200) ";
     let result = MetaProperties::new(String::from(input));
     assert!(matches!(result, Some(MetaProperties::FontColor(_))));
-
-    let input = " allow-html = true ";
-    let result = MetaProperties::new(String::from(input));
-    assert!(matches!(result, Some(MetaProperties::AllowHtml(true))));
 }
 
 #[test]
@@ -100,7 +86,6 @@ fn test_empty_values() {
 }
 
 #[test]
-#[should_panic]
 fn test_missing_equals_sign() {
     let input = "nameMyDocument";
     let _ = MetaProperties::new(String::from(input));
@@ -114,34 +99,13 @@ fn test_multiple_equals_signs() {
 }
 
 #[test]
-#[should_panic]
 fn test_invalid_integer_value() {
     let input = "font-size=invalid";
     let _ = MetaProperties::new(String::from(input));
 }
 
 #[test]
-#[should_panic]
 fn test_invalid_boolean_value() {
     let input = "allow-html=invalid";
     let _ = MetaProperties::new(String::from(input));
-}
-
-#[test]
-fn test_boolean_variations() {
-    let input = "allow-html=true";
-    let result = MetaProperties::new(String::from(input));
-    assert!(matches!(result, Some(MetaProperties::AllowHtml(true))));
-
-    let input = "allow-html=TRUE";
-    let result = MetaProperties::new(String::from(input));
-    assert!(matches!(result, Some(MetaProperties::AllowHtml(true))));
-
-    let input = "allow-html=false";
-    let result = MetaProperties::new(String::from(input));
-    assert!(matches!(result, Some(MetaProperties::AllowHtml(false))));
-
-    let input = "allow-html=FALSE";
-    let result = MetaProperties::new(String::from(input));
-    assert!(matches!(result, Some(MetaProperties::AllowHtml(false))));
 }

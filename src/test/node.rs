@@ -1,6 +1,6 @@
 #![cfg(test)]
 use crate::parse::node::StyledSyntax;
-use crate::types::color::{Color, ColorLiteral};
+use crate::utilities::color::{Color, ColorLiteral};
 
 #[test]
 fn test_styled_syntax_debug() {

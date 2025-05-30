@@ -22,10 +22,10 @@ fn show_success(msg: &str) {
 pub fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
     let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
     let lexer = Lexer::new(src.clone());
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize()?;
 
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse()?;
     let html = document.build();
 
     if let Some(output_path) = output_path {
@@ -67,10 +67,10 @@ pub fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), Stri
 pub fn render(source: PathBuf) -> Result<(), String> {
     let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
     let lexer = Lexer::new(src.clone());
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize()?;
 
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse()?;
     let html = document.build();
 
     let listener =
@@ -154,10 +154,10 @@ fn handle_request(mut stream: TcpStream, html: &str) {
 pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
     let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
     let lexer = Lexer::new(src.clone());
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize()?;
 
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse()?;
     let html = document.build();
 
     let pdf_output_path = if let Some(path) = output_path {

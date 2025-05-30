@@ -1,7 +1,8 @@
+// todo: handle error more gracefully in this file
 use super::lexer::Lexer;
 use super::token::{Token, TokenKind};
 use super::traits::LexerTrait;
-use crate::types::constants::*;
+use crate::utilities::constants::*;
 use fancy_regex::Regex;
 
 pub struct RegexPattern<L: LexerTrait> {
@@ -99,83 +100,85 @@ impl<L: LexerTrait> RegexPattern<L> {
     pub fn get_full_regex() -> [RegexPattern<Lexer>; 20] {
         [
             RegexPattern::new(
-                Regex::new(NEWLINE_REGEX).unwrap(),
+                Regex::new(NEWLINE_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::EndOfLine),
             ),
             RegexPattern::new(
-                Regex::new(TABLE_CONTAINER_REGEX).unwrap(),
+                Regex::new(TABLE_CONTAINER_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::Table),
             ),
             RegexPattern::new(
-                Regex::new(HORIZONTAL_LINE_REGEX).unwrap(),
+                Regex::new(HORIZONTAL_LINE_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::HorizontalLine),
             ),
             RegexPattern::new(
-                Regex::new(BLOCK_MATH_REGEX).unwrap(),
+                Regex::new(BLOCK_MATH_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::BlockMath),
             ),
             RegexPattern::new(
-                Regex::new(INLINE_MATH_REGEX).unwrap(),
+                Regex::new(INLINE_MATH_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::InlineMath),
             ),
             RegexPattern::new(
-                Regex::new(WHITESPACE_REGEX).unwrap(),
+                Regex::new(WHITESPACE_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::<Lexer>::skip_handler(),
             ),
             RegexPattern::new(
-                Regex::new(LINK_REGEX).unwrap(),
+                Regex::new(LINK_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::Link),
             ),
             RegexPattern::new(
-                Regex::new(DEFINITION_REGEX).unwrap(),
+                Regex::new(DEFINITION_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::<Lexer>::definition_handler(String::from("-@[]")),
             ),
             RegexPattern::new(
-                Regex::new(CHARACTER_STYLE_REGEX).unwrap(),
+                Regex::new(CHARACTER_STYLE_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::CharacterStyle),
             ),
             RegexPattern::new(
-                Regex::new(META_DATA_REGEX_LONG).unwrap(),
+                Regex::new(META_DATA_REGEX_LONG).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::MetaData),
             ),
             RegexPattern::new(
-                Regex::new(META_DATA_REGEX_SHORT).unwrap(),
+                Regex::new(META_DATA_REGEX_SHORT).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::MetaData),
             ),
             RegexPattern::new(
-                Regex::new(LITERAL_RIGHT_PARENTHESIS_REGEX).unwrap(),
+                Regex::new(LITERAL_RIGHT_PARENTHESIS_REGEX)
+                    .expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::LiteralRightParenthesis),
             ),
             RegexPattern::new(
-                Regex::new(BACKSLASH_LEFT_PARENTHESIS_INLINE_REGEX).unwrap(),
+                Regex::new(BACKSLASH_LEFT_PARENTHESIS_INLINE_REGEX)
+                    .expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::BackSlashLeftParenthesisInline),
             ),
             RegexPattern::new(
-                Regex::new(BOLD_REGEX).unwrap(),
+                Regex::new(BOLD_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::Bold),
             ),
             RegexPattern::new(
-                Regex::new(HEADING_REGEX).unwrap(),
+                Regex::new(HEADING_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::Heading),
             ),
             RegexPattern::new(
-                Regex::new(ORDERED_LIST_REGEX).unwrap(),
+                Regex::new(ORDERED_LIST_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::OrderedList),
             ),
             RegexPattern::new(
-                Regex::new(UNORDERED_LIST_REGEX).unwrap(),
+                Regex::new(UNORDERED_LIST_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::UnorderedList),
             ),
             RegexPattern::new(
-                Regex::new(ITALIC_REGEX).unwrap(),
+                Regex::new(ITALIC_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::Italic),
             ),
             RegexPattern::new(
-                Regex::new(RIGHT_PARENTHESIS_REGEX).unwrap(),
+                Regex::new(RIGHT_PARENTHESIS_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::RightParenthesis),
             ),
             RegexPattern::new(
-                Regex::new(STRING_REGEX).unwrap(),
+                Regex::new(STRING_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::string_handler(),
             ),
         ]
@@ -184,47 +187,49 @@ impl<L: LexerTrait> RegexPattern<L> {
     pub fn get_inline_regex() -> [RegexPattern<L>; 11] {
         [
             RegexPattern::new(
-                Regex::new(NEWLINE_REGEX).unwrap(),
+                Regex::new(NEWLINE_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::EndOfLine),
             ),
             RegexPattern::new(
-                Regex::new(INLINE_MATH_REGEX).unwrap(),
+                Regex::new(INLINE_MATH_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::InlineMath),
             ),
             RegexPattern::new(
-                Regex::new(BLOCK_MATH_REGEX).unwrap(),
+                Regex::new(BLOCK_MATH_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::BlockMath),
             ),
             RegexPattern::new(
-                Regex::new(LINK_REGEX).unwrap(),
+                Regex::new(LINK_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::Link),
             ),
             RegexPattern::new(
-                Regex::new(CHARACTER_STYLE_REGEX).unwrap(),
+                Regex::new(CHARACTER_STYLE_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::CharacterStyle),
             ),
             RegexPattern::new(
-                Regex::new(LITERAL_RIGHT_PARENTHESIS_REGEX).unwrap(),
+                Regex::new(LITERAL_RIGHT_PARENTHESIS_REGEX)
+                    .expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::LiteralRightParenthesis),
             ),
             RegexPattern::new(
-                Regex::new(BACKSLASH_LEFT_PARENTHESIS_INLINE_REGEX).unwrap(),
+                Regex::new(BACKSLASH_LEFT_PARENTHESIS_INLINE_REGEX)
+                    .expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::BackSlashLeftParenthesisInline),
             ),
             RegexPattern::new(
-                Regex::new(BOLD_REGEX).unwrap(),
+                Regex::new(BOLD_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::Bold),
             ),
             RegexPattern::new(
-                Regex::new(ITALIC_REGEX).unwrap(),
+                Regex::new(ITALIC_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::Italic),
             ),
             RegexPattern::new(
-                Regex::new(RIGHT_PARENTHESIS_REGEX).unwrap(),
+                Regex::new(RIGHT_PARENTHESIS_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::non_capture_handler(TokenKind::RightParenthesis),
             ),
             RegexPattern::new(
-                Regex::new(STRING_REGEX).unwrap(),
+                Regex::new(STRING_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::string_handler(),
             ),
         ]

@@ -2,16 +2,16 @@ use super::node::{ASTNode, BlockedContent, TableContent};
 use super::tree::Document;
 use crate::lexer::lexer_lite::LexerLite;
 use crate::lexer::traits::LexerTrait;
-use crate::types::constants::{MULTIPLE_NEWLINE_REGEX, WIDTH_HEIGHT_REGEX};
+use crate::utilities::constants::{MULTIPLE_NEWLINE_REGEX, WIDTH_HEIGHT_REGEX};
 use fancy_regex::Regex;
 
-pub fn parse_table(src: String, document: &mut Document) {
-    let regex = Regex::new(MULTIPLE_NEWLINE_REGEX).unwrap();
+pub fn parse_table(src: String, document: &mut Document) -> Result<(), String> {
+    let regex = Regex::new(MULTIPLE_NEWLINE_REGEX).expect("Hard coded regex should be valid.");
     let src = regex.replace_all(&src, "\n").to_string();
     let mut src: Vec<&str> = src.split("\n").collect();
     if src.len() == 0 {
-        eprintln!("Invalid table syntax: Empty table");
-        return;
+        crate::warn!("Runtime Warning: Invalid table syntax: Empty table");
+        return Ok(());
     }
 
     let mut table_content: Vec<Vec<TableContent>> = Vec::new();
@@ -59,9 +59,9 @@ pub fn parse_table(src: String, document: &mut Document) {
             }
 
             let lexer = LexerLite::new(content);
-            let tokens = lexer.tokenize();
+            let tokens = lexer.tokenize()?;
             let parser = super::parse::Parser::new(tokens);
-            let mut nodes = parser.parse().nodes;
+            let mut nodes = parser.parse()?.nodes;
             if nodes.len() == 0 {
                 // info: empty cell, composed with ;; ...
                 table_content[row_pos].push(TableContent::new(
@@ -73,7 +73,9 @@ pub fn parse_table(src: String, document: &mut Document) {
                 ));
                 continue 'inner;
             }
-            let content = nodes.pop().unwrap();
+            let content = nodes
+                .pop()
+                .expect("Pop not empty table cell should be valid.");
 
             table_content[row_pos].push(TableContent::new(content, is_heading, style));
             col_pos += 1;
@@ -85,10 +87,11 @@ pub fn parse_table(src: String, document: &mut Document) {
         position,
         content: table_content,
     }]);
+    Ok(())
 }
 
 fn parse_position(line: &str) -> (Option<f32>, Option<f32>) {
-    let regex = Regex::new(WIDTH_HEIGHT_REGEX).unwrap();
+    let regex = Regex::new(WIDTH_HEIGHT_REGEX).expect("Hard coded regex should be valid.");
     let matched = regex.find(line);
     if let Ok(Some(_)) = matched {
         let captures = regex.captures(line).unwrap().unwrap();

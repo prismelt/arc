@@ -19,9 +19,9 @@ fn test_parser_debug() {
 fn test_basic_parsing_1() {
     let source = "Hello World".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.meta.len(), 0);
     assert_eq!(document.nodes.len(), 1);
@@ -36,9 +36,9 @@ fn test_basic_parsing_1() {
 fn test_basic_parsing_2() {
     let source = "Hello World\nHello World".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.meta.len(), 0);
     assert_eq!(document.nodes.len(), 2);
@@ -58,9 +58,9 @@ fn test_basic_parsing_2() {
 fn test_basic_parsing_3() {
     let source = "Hello World\nHello World\n\nHello World".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.meta.len(), 0);
     assert_eq!(document.nodes.len(), 4);
@@ -87,9 +87,9 @@ fn test_basic_parsing_3() {
 fn test_meta_parsing_1() {
     let source = "<meta name=My Document key=value />\nHello World".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.meta.len(), 1);
     assert_eq!(
@@ -109,9 +109,9 @@ fn test_meta_parsing_2() {
     let source =
         "<meta name=My Document>\n<meta title=TEST />\nHello World\nThis is test".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.meta.len(), 2);
     assert_eq!(
@@ -136,10 +136,10 @@ fn test_meta_parsing_2() {
 fn test_complex_expression_1() {
     let source = String::from("%[red:16:(255, 0, 0)] some text next");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
 
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.meta.len(), 0);
     assert_eq!(document.nodes.len(), 1);
@@ -154,9 +154,9 @@ fn test_complex_expression_1() {
 fn test_complex_expression_2() {
     let source = String::from("~ %[red:16:(255, 0, 0)] some text next");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.meta.len(), 0);
     assert_eq!(document.nodes.len(), 1);
@@ -171,10 +171,10 @@ fn test_complex_expression_2() {
 fn test_complex_expression_3() {
     let source = String::from("~ %[red] some char \\(&[www.google.com/path/to/page] some char)");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
 
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.meta.len(), 0);
     assert_eq!(document.nodes.len(), 1);
@@ -190,9 +190,9 @@ fn test_complex_expression_4() {
     let source = "~ %[red:10:blue] type string\nthis is next line with \\(inner **bold**) content"
         .to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 2);
     assert_eq!(document.meta.len(), 0);
@@ -204,9 +204,9 @@ fn test_complex_expression_4() {
 fn test_definition_1() {
     let source = "@[term] 'definition'".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 1);
     assert_eq!(document.meta.len(), 0);
@@ -221,9 +221,9 @@ fn test_definition_1() {
 fn test_definition_2() {
     let source = "@[term, term2, term3] 'definition, definition2, definition3'".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 1);
     assert_eq!(document.meta.len(), 0);
@@ -238,10 +238,10 @@ fn test_definition_2() {
 fn test_heading_1() {
     let source = "# Hello World".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
 
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 1);
     assert_eq!(document.meta.len(), 0);
@@ -256,9 +256,9 @@ fn test_heading_1() {
 fn test_multiple_headings() {
     let source = "# Hello World\n## This is next line".to_string();
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 2);
     assert_eq!(document.meta.len(), 0);
@@ -278,9 +278,9 @@ fn test_multiple_headings() {
 fn test_deep_nesting() {
     let source = String::from("Hello, \\(inner 1 \\( inner 2 \\(inner 3) inner 2) inner 1) world.");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 1);
     assert_eq!(document.nodes[0].len(), 1);
@@ -315,9 +315,9 @@ fn test_deep_nesting() {
 fn test_ordered_list_1() {
     let source = String::from("1. Hello World\n2. This is next line\n3. This is next line");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 5); // 3 list, 2 list indicators
 }
@@ -328,9 +328,9 @@ fn test_ordered_list_2() {
         "1. Hello World\n2. This is next line\n3. This is next line\n\n4. This is next line",
     );
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 6);
 }
@@ -340,9 +340,9 @@ fn test_ordered_list_with_styling() {
     let source =
         String::from("1. \\(Hello World)\n2. This is \\(next line)\n3. %[red]This is next line");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 5); // 3 list, 2 list indicators
 }
@@ -351,9 +351,9 @@ fn test_ordered_list_with_styling() {
 fn test_unordered_list_1() {
     let source = String::from("- Hello World\n- This is next line\n- This is next line");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 5); // 3 list, 2 list indicators
 }
@@ -362,9 +362,9 @@ fn test_unordered_list_1() {
 fn test_nesting_right_parenthesis() {
     let source = String::from(r"\(%[yellow](second time parsing\))");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(
         format!("{:?}", document.nodes[0][0]),
@@ -376,9 +376,9 @@ fn test_nesting_right_parenthesis() {
 fn test_triple_tide() {
     let source = String::from("~~~Hello World~~~");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 1);
     assert_eq!(document.nodes[0].len(), 1);
@@ -392,9 +392,9 @@ fn test_triple_tide() {
 fn test_parsing_math_1() {
     let source = String::from("<math> x = 1 </math>");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let html = document.build();
     assert!(html.contains("<span>$$x = 1$$</span>"));
@@ -404,9 +404,9 @@ fn test_parsing_math_1() {
 fn test_parsing_math_2() {
     let source = String::from("<math x = 1/>");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let html = document.build();
     assert!(html.contains("<span>\\(x = 1\\)</span>"));
@@ -416,9 +416,9 @@ fn test_parsing_math_2() {
 fn test_parsing_math_3() {
     let source = String::from("Hello World <math x = 1/>");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let html = document.build();
     assert!(html.contains("<span>\\(x = 1\\)</span>"));
@@ -428,7 +428,7 @@ fn test_parsing_math_3() {
 fn test_invalid_math() {
     let source = String::from("math <math> x = 1 </math> cannot exist inLine");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     assert_eq!(tokens.len(), 2);
 }
 
@@ -436,9 +436,9 @@ fn test_invalid_math() {
 fn test_inline_math_inline() {
     let source = String::from("Hello World <math x = 1/> This is next line");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let html = document.build();
     assert!(html.contains("<span>\\(x = 1\\)</span>"));
@@ -450,9 +450,9 @@ fn test_ordered_with_unordered_list() {
         "1. Hello World\n2. This is next line\n3. This is next line\n- This is next line\n- This is next line\n- This is next line",
     );
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 10);
 }
@@ -461,9 +461,9 @@ fn test_ordered_with_unordered_list() {
 fn test_horizontal_line_1() {
     let source = String::from("---");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 1);
     assert_eq!(document.nodes[0].len(), 1);
@@ -477,9 +477,9 @@ fn test_horizontal_line_1() {
 fn test_horizontal_line_2() {
     let source = String::from("Hello World\n---\nThis is next line");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     assert_eq!(document.nodes.len(), 3);
     assert_eq!(document.nodes[1].len(), 1);
@@ -493,9 +493,9 @@ fn test_horizontal_line_2() {
 fn test_invalid_horizontal_line_1() {
     let source = String::from("some text \\(---)");
     let lexer = Lexer::new(source);
-    let tokens = lexer.tokenize();
+    let tokens = lexer.tokenize().unwrap();
     let parser = Parser::new(tokens);
-    let document = parser.parse();
+    let document = parser.parse().unwrap();
 
     let contains_horizontal = document.nodes.iter().any(|node| match node.as_slice() {
         [

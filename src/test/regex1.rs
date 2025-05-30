@@ -1,5 +1,5 @@
 #![cfg(test)]
-use crate::types::constants::*;
+use crate::utilities::constants::*;
 use fancy_regex::Regex;
 
 #[test]

@@ -1,4 +1,4 @@
-use crate::types::color::Color;
+use crate::utilities::color::Color;
 use maud::html;
 
 #[derive(Debug, PartialEq)]
@@ -9,7 +9,6 @@ pub enum MetaProperties {
     FontSize(u8),
     FontColor(Color),
     BackgroundColor(Color),
-    AllowHtml(bool),
     PTagFontSize(u8),
     PTagFontColor(Color),
     H1TagFontSize(u8),
@@ -26,13 +25,14 @@ impl MetaProperties {
     pub fn new(string: String) -> Option<Self> {
         let parts: Vec<&str> = string.splitn(2, "=").collect();
         if parts.len() != 2 {
-            panic!("Invalid <meta /> property: {}", string);
+            crate::warn!("Runtime Warning: Invalid <meta /> property: {}", string);
+            return None;
         }
         let key = parts[0].trim();
         let value = parts[1].trim();
 
-        if value.is_empty() {
-            eprintln!("Invalid <meta /> property: {}", string);
+        if value.is_empty() || key.is_empty() {
+            crate::warn!("Runtime Warning: Invalid <meta /> property: {}", string);
             return None;
         }
         Self::convert_meta_result(key, value)
@@ -55,7 +55,6 @@ impl MetaProperties {
                 html! { style { "html, body, main { background-color: " (color.build()) "; }" } }
                     .into_string()
             }
-            MetaProperties::AllowHtml(_) => String::new(),
             MetaProperties::PTagFontSize(size) => {
                 html! { style { "span, a { font-size: " (size) "px !important; }" } }.into_string()
             }
@@ -92,98 +91,48 @@ impl MetaProperties {
 
     fn convert_meta_result(key: &str, value: &str) -> Option<MetaProperties> {
         match key {
-            "name" => Some(MetaProperties::Name(value.to_string())),
-            "title" => Some(MetaProperties::Title(value.to_string())),
-            "font-family" => Some(MetaProperties::FontFamily(value.to_string())),
-            "font-size" => Some(MetaProperties::FontSize(Self::str_to_u8(value))),
-            "font-color" => {
-                if let Some(color) = Self::str_to_color(value) {
-                    Some(MetaProperties::FontColor(color))
-                } else {
-                    None
-                }
+            "name" => Some(MetaProperties::Name(String::from(value))),
+            "title" => Some(MetaProperties::Title(String::from(value))),
+            "font-family" => Some(MetaProperties::FontFamily(String::from(value))),
+            "font-size" => Some(MetaProperties::FontSize(Self::str_to_u8(value)?)),
+            "font-color" => Some(MetaProperties::FontColor(Self::str_to_color(value)?)),
+            "background-color" => Some(MetaProperties::BackgroundColor(Self::str_to_color(value)?)),
+            "text-font-size" => Some(MetaProperties::PTagFontSize(Self::str_to_u8(value)?)),
+            "text-color" => Some(MetaProperties::PTagFontColor(Self::str_to_color(value)?)),
+            "h1-font-size" => Some(MetaProperties::H1TagFontSize(Self::str_to_u8(value)?)),
+            "h1-font-color" => Some(MetaProperties::H1TagFontColor(Self::str_to_color(value)?)),
+            "h2-font-size" => Some(MetaProperties::H2TagFontSize(Self::str_to_u8(value)?)),
+            "h2-font-color" => Some(MetaProperties::H2TagFontColor(Self::str_to_color(value)?)),
+            "h3-font-size" => Some(MetaProperties::H3TagFontSize(Self::str_to_u8(value)?)),
+            "h3-font-color" => Some(MetaProperties::H3TagFontColor(Self::str_to_color(value)?)),
+            "h4-font-size" => Some(MetaProperties::H4TagFontSize(Self::str_to_u8(value)?)),
+            "h4-font-color" => Some(MetaProperties::H4TagFontColor(Self::str_to_color(value)?)),
+            _ => {
+                crate::warn!("Runtime Warning: Unrecognized <meta /> property: {}", key);
+                None
             }
-            "background-color" => {
-                if let Some(color) = Self::str_to_color(value) {
-                    Some(MetaProperties::BackgroundColor(color))
-                } else {
-                    None
-                }
-            }
-            "text-font-size" => Some(MetaProperties::PTagFontSize(Self::str_to_u8(value))),
-            "text-color" => {
-                if let Some(color) = Self::str_to_color(value) {
-                    Some(MetaProperties::PTagFontColor(color))
-                } else {
-                    None
-                }
-            }
-            "h1-font-size" => Some(MetaProperties::H1TagFontSize(Self::str_to_u8(value))),
-            "h1-font-color" => {
-                if let Some(color) = Self::str_to_color(value) {
-                    Some(MetaProperties::H1TagFontColor(color))
-                } else {
-                    None
-                }
-            }
-            "h2-font-size" => Some(MetaProperties::H2TagFontSize(Self::str_to_u8(value))),
-            "h2-font-color" => {
-                if let Some(color) = Self::str_to_color(value) {
-                    Some(MetaProperties::H2TagFontColor(color))
-                } else {
-                    None
-                }
-            }
-            "h3-font-size" => Some(MetaProperties::H3TagFontSize(Self::str_to_u8(value))),
-            "h3-font-color" => {
-                if let Some(color) = Self::str_to_color(value) {
-                    Some(MetaProperties::H3TagFontColor(color))
-                } else {
-                    None
-                }
-            }
-            "h4-font-size" => Some(MetaProperties::H4TagFontSize(Self::str_to_u8(value))),
-            "h4-font-color" => {
-                if let Some(color) = Self::str_to_color(value) {
-                    Some(MetaProperties::H4TagFontColor(color))
-                } else {
-                    None
-                }
-            }
-            "allow-html" => {
-                let value = value.trim().to_lowercase();
-                match value.as_str() {
-                    "true" => Some(MetaProperties::AllowHtml(true)),
-                    "false" => Some(MetaProperties::AllowHtml(false)),
-                    _ => panic!("Invalid boolean value for allow-html: {}", value),
-                }
-            }
-            "p-font-size" => Some(MetaProperties::PTagFontSize(Self::str_to_u8(value))),
-            "p-font-color" => {
-                if let Some(color) = Self::str_to_color(value) {
-                    Some(MetaProperties::PTagFontColor(color))
-                } else {
-                    None
-                }
-            }
-            _ => panic!("Invalid <meta /> property: {}", key),
         }
     }
 
     fn str_to_color(str: &str) -> Option<Color> {
         let result = Color::from_string(str.to_string());
-        if let Err(err) = result {
-            eprintln!("{}", err);
+        let Ok(color) = result else {
+            crate::warn!("Runtime Warning: {}", result.unwrap_err());
             return None;
-        }
-        result.ok()
+        };
+        Some(color)
     }
 
-    fn str_to_u8(string: &str) -> u8 {
-        let result = string.parse::<u8>();
-        if result.is_err() {
-            panic!("Invalid integer value for meta property: {}", string);
-        }
-        result.unwrap()
+    fn str_to_u8(str: &str) -> Option<u8> {
+        let result = str.parse::<u8>();
+
+        let Ok(result) = result else {
+            crate::warn!(
+                "Runtime Warning: Invalid integer value for meta property: {}",
+                str
+            );
+            return None;
+        };
+        Some(result)
     }
 }

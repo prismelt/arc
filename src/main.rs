@@ -1,18 +1,13 @@
 mod args;
+// mod funcs; // todo: implement real functions afterwards
 mod lexer;
 mod parse;
 mod test;
-mod types;
+mod utilities;
 use args::command::{Args, Commands::*};
 use args::methods::{build, compile, help, render};
 use clap::Parser as _;
-use colored::Colorize as _;
-
-fn show_err(res: Result<(), String>) {
-    if let Err(err) = res {
-        eprintln!("{}", err.bold().red());
-    }
-}
+use utilities::stdout::show_err;
 
 #[tokio::main]
 async fn main() {

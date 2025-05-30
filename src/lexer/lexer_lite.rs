@@ -17,7 +17,7 @@ impl LexerTrait for LexerLite {
         }
     }
 
-    fn tokenize(mut self) -> Vec<Token> {
+    fn tokenize(mut self) -> Result<Vec<Token>, String> {
         let patterns = RegexPattern::<LexerLite>::get_inline_regex();
 
         'outer: while !self.at_eof() {
@@ -28,21 +28,20 @@ impl LexerTrait for LexerLite {
                     if loc.start() == 0 {
                         let matched_str = &pattern.regex;
                         if matched_str.as_str().len() == 0 {
-                            panic!("Lexer: tokenize: zero length match");
+                            return Err("Lexer: tokenize: zero length match".to_string());
                         }
-                        // println!("Matched: {:?}", pattern.regex);
                         (pattern.handler)(&mut self, matched_str);
                         continue 'outer;
                     }
                 }
             }
-            panic!(
-                "No pattern matched at position {}, reminder: {}",
+            return Err(format!(
+                "Lexer: No pattern matched at position {}, reminder: {}",
                 self.position, reminder
-            );
+            ));
         }
         self.push(Token::new(TokenKind::EOF, None));
-        self.token
+        Ok(self.token)
     }
     fn reminder(&self) -> &str {
         &self.source[self.position..]

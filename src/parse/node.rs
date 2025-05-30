@@ -1,4 +1,4 @@
-use crate::types::color::Color;
+use crate::utilities::color::Color;
 use maud::{Markup, PreEscaped, html};
 
 #[derive(Debug)]

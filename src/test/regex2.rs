@@ -1,5 +1,5 @@
 #![cfg(test)]
-use crate::types::constants::*;
+use crate::utilities::constants::*;
 use fancy_regex::Regex;
 
 #[test]
@@ -194,4 +194,110 @@ fn test_horizontal_line_regex_3() {
 fn test_invalid_horizontal_line_regex_1() {
     let regex = Regex::new(HORIZONTAL_LINE_REGEX).unwrap();
     let _ = regex.find("some text \\(---)").unwrap().unwrap();
+}
+
+#[test]
+fn test_script_regex_1() {
+    let regex = Regex::new(SCRIPT_REGEX).unwrap();
+    let matched = regex.find("<script>some text</script>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<script>some text</script>");
+}
+
+#[test]
+fn test_script_regex_capture_1() {
+    let regex = Regex::new(SCRIPT_REGEX).unwrap();
+    let matched = regex
+        .find("<script>some text with </ ssscript> </script>")
+        .unwrap()
+        .unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str(), "some text with </ ssscript> ");
+}
+
+#[test]
+fn test_short_func_regex_1() {
+    let regex = Regex::new(SHORT_FUNC_REGEX).unwrap();
+    let matched = regex
+        .find("|*some text| some text with | in it")
+        .unwrap()
+        .unwrap();
+    assert_eq!(matched.as_str(), "|*some text| some text with | in it");
+}
+
+#[test]
+fn test_short_func_regex_capture_1() {
+    let regex = Regex::new(SHORT_FUNC_REGEX).unwrap();
+    let matched = regex
+        .find("|*some text| some text with | in it")
+        .unwrap()
+        .unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    let capture_2 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(2)
+        .unwrap();
+    assert_eq!(capture_1.as_str(), "some text");
+    assert_eq!(capture_2.as_str(), "some text with | in it");
+}
+
+#[test]
+fn test_full_func_regex_1() {
+    let regex = Regex::new(FULL_FUNC_REGEX).unwrap();
+    let matched = regex
+        .find("fn name_here (*some text): some text with (* some text) in it")
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        matched.as_str(),
+        "fn name_here (*some text): some text with (* some text) in it"
+    );
+}
+
+#[test]
+fn test_full_func_regex_capture_1() {
+    let regex = Regex::new(FULL_FUNC_REGEX).unwrap();
+    let matched = regex
+        .find("fn 1name-here (*some text): some text with (* some text) in it")
+        .unwrap()
+        .unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    let capture_2 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(2)
+        .unwrap();
+    let capture_3 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(3)
+        .unwrap();
+    assert_eq!(capture_1.as_str(), "1name-here");
+    assert_eq!(capture_2.as_str(), "some text");
+    assert_eq!(capture_3.as_str(), "some text with (* some text) in it");
+}
+
+#[test]
+fn test_short_func_regex_empty() {
+    let regex = Regex::new(SHORT_FUNC_REGEX).unwrap();
+    let matched = regex.find("|*| ").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "|*| ");
 }

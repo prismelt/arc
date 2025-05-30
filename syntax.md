@@ -20,9 +20,8 @@ The following meta data properties are supported:
 - `font-size`: The font size of the document. This is used as the font size of the document.
 - `font-color`: The font color of the document. This is used as the font color of the document.
 - `background-color`: The background color of the document. This is used as the background color of the document.
-- `allow-html`: Whether to allow html in the document. It accepts a boolean value, `true` or `false`. This feature is not yet implemented.
-- `p-font-size`: The font size of the paragraph. This is used as the font size of the paragraph.
-- `p-font-color`: The font color of the paragraph. This is used as the font color of the paragraph.
+- `text-font-size`: The font size of the paragraph. This is used as the font size of the paragraph.
+- `text-font-color`: The font color of the paragraph. This is used as the font color of the paragraph.
 - `h1-font-size`: The font size of the h1 tag. This is used as the font size of the h1 tag.
 - `h1-font-color`: The font color of the h1 tag. This is used as the font color of the h1 tag.
 - `h2-font-size`: The font size of the h2 tag. This is used as the font size of the h2 tag.
