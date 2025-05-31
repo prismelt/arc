@@ -1,5 +1,6 @@
 #![cfg(test)]
 mod color;
+mod funcs;
 mod html;
 mod lexer;
 mod meta;

@@ -369,6 +369,60 @@ fn test_full_func_regex_capture_3() {
 }
 
 #[test]
+fn test_empty_func() {
+    let regex = Regex::new(FULL_FUNC_REGEX).unwrap();
+    let matched = regex.find("fn foo():  bar").unwrap().unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    let capture_2 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(2)
+        .unwrap();
+    let capture_3 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(3)
+        .unwrap();
+    assert_eq!(capture_1.as_str(), "foo");
+    assert_eq!(capture_2.as_str(), "");
+    assert_eq!(capture_3.as_str(), "bar");
+}
+
+#[test]
+fn test_empty_func_2() {
+    let regex = Regex::new(FULL_FUNC_REGEX).unwrap();
+    let matched = regex.find("fn foo      ():  bar").unwrap().unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    let capture_2 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(2)
+        .unwrap();
+    let capture_3 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(3)
+        .unwrap();
+    assert_eq!(capture_1.as_str(), "foo");
+    assert_eq!(capture_2.as_str(), "");
+    assert_eq!(capture_3.as_str(), "bar");
+}
+
+#[test]
 fn test_multi_line_scripting() {
     let regex = Regex::new(SCRIPT_REGEX).unwrap();
     let source = "<script>\nHello World\n</script>".to_string();

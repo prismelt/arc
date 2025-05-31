@@ -25,12 +25,21 @@ pub struct InlineFunction {
 impl Function for FullFunction {
     fn new(name: String, params: String, content: String) -> Result<Self, String> {
         let params = Self::parse_args(params)?;
+        if name.trim().is_empty() {
+            return Err(format!("Invalid function name: {}, cannot be empty", name));
+        }
+        if !name.trim().starts_with("$") {
+            crate::warn!(
+                "Runtime Warning: function name should start with '$', got {}",
+                name
+            );
+        }
         Ok(FullFunction {
             params,
             content,
             regex: Regex::new(&format!(r"{}\((.*?)\)", regex::escape(&name)))
                 .expect("Generated regex should be valid."),
-            name,
+            name: String::from(name.trim()),
         })
     }
     fn invoke(&self, content: &mut String) -> Result<(), String> {
@@ -84,9 +93,29 @@ impl Function for FullFunction {
 
 impl Function for InlineFunction {
     fn new(name: String, params: String, content: String) -> Result<Self, String> {
-        if !(params.contains("*")) || params.replace("*", "").trim().is_empty() {
-            return Err(format!("Invalid function arguments: {}", params));
+        let params = params.trim();
+        if params[1..].trim().is_empty() {
+            return Err(format!(
+                "Invalid function argument / name: {}, cannot be empty",
+                params
+            ));
         }
+        if name.trim().is_empty() {
+            return Err(format!(
+                "Invalid function argument / name: {}, cannot be empty",
+                name
+            ));
+        }
+        let name = if !name.trim().starts_with("$") {
+            crate::warn!(
+                "Runtime Warning: function name should start with `$`, got {}",
+                name
+            );
+            crate::warn!("Runtime Warning: `$` is automatically added for inline function");
+            format!("${}", name.trim())
+        } else {
+            String::from(name.trim())
+        };
         Ok(InlineFunction {
             params: params.replace("*", ""),
             content,
@@ -142,25 +171,39 @@ impl FullFunction {
             return Err(format!("Invalid function arguments: {}", args));
         }
         let params: Vec<String> = args[1..]
-            .split("*")
+            .split(" *")
             .map(|s| String::from(s.trim()))
             .collect();
 
         Ok(params)
     }
     fn validate(input_params: String, params: &Vec<String>) -> Result<Vec<String>, String> {
+        let params = params
+            .into_iter()
+            .filter(|p| !p.is_empty())
+            .collect::<Vec<&String>>();
+
+        if input_params.trim().is_empty() && params.len() == 0 {
+            return Ok(Vec::new());
+        }
+
         if params.len() == 0 && !input_params.trim().is_empty() {
             return Err(format!(
                 "Invalid function arguments: {}, expected no arguments",
                 input_params
             ));
         }
-        if !(input_params.starts_with("%")) {
+        if !input_params.starts_with("%") && params.len() > 0 {
             return Err(format!(
-                "Invalid function arguments: {}, expected at least one argument",
+                "Invalid function arguments: expect {},but got {}",
+                params.len(),
                 input_params
+                    .split("%")
+                    .filter(|s| !s.trim().is_empty())
+                    .count()
             ));
         }
+
         let input_parameters = input_params[1..]
             .split(" %")
             .map(|s| String::from(s))

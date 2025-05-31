@@ -3,6 +3,7 @@ use crate::lexer::lexer::Lexer;
 use crate::lexer::traits::LexerTrait;
 use crate::parse::meta::MetaProperties;
 use crate::parse::parse::Parser;
+use crate::utilities::stdout::show_success;
 use clap::CommandFactory as _;
 use colored::Colorize as _;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
@@ -14,10 +15,6 @@ use std::process::Command;
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
-
-fn show_success(msg: &str) {
-    println!("{}", msg.green());
-}
 
 pub fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
     let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;

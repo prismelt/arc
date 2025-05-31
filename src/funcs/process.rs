@@ -20,6 +20,13 @@ impl FunctionProcessor {
         let mut script_content = self.extract_script_content()?;
         let full_functions = Self::extract_full_functions(&mut script_content)?;
         let inline_functions = Self::extract_inline_functions(&mut script_content)?;
+
+        if !(script_content.trim().is_empty()) {
+            return Err(format!(
+                "Script content is not fully consumed, suggest invalid function syntax. Reminder: {}",
+                script_content.trim()
+            ));
+        }
         // todo: avoid cascading replacement in functions iterations
         for func in full_functions {
             func.invoke(&mut self.content)?;
@@ -103,7 +110,7 @@ impl FunctionProcessor {
                         .as_str();
                     let function = InlineFunction::new(
                         String::from(name),
-                        String::from(name),
+                        format!("*{}", name), // info: because of regex, add this * safely
                         String::from(body),
                     )?;
                     inline_functions.push(function);
