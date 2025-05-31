@@ -5,7 +5,6 @@ use crate::parse::meta::MetaProperties;
 use crate::parse::parse::Parser;
 use crate::utilities::stdout::show_success;
 use clap::CommandFactory as _;
-use colored::Colorize as _;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
 use std::fs;
 use std::io::Write;

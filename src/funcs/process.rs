@@ -18,8 +18,8 @@ impl FunctionProcessor {
     }
     pub fn process(mut self) -> Result<String, String> {
         let mut script_content = self.extract_script_content()?;
-        let full_functions = Self::extract_full_functions(&mut script_content)?;
-        let inline_functions = Self::extract_inline_functions(&mut script_content)?;
+        self.full_functions = Self::extract_full_functions(&mut script_content)?;
+        self.inline_functions = Self::extract_inline_functions(&mut script_content)?;
 
         if !(script_content.trim().is_empty()) {
             return Err(format!(
@@ -28,10 +28,10 @@ impl FunctionProcessor {
             ));
         }
         // todo: avoid cascading replacement in functions iterations
-        for func in full_functions {
+        for func in self.full_functions {
             func.invoke(&mut self.content)?;
         }
-        for func in inline_functions {
+        for func in self.inline_functions {
             func.invoke(&mut self.content)?;
         }
         Ok(self.content)

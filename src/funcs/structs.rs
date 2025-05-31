@@ -9,14 +9,12 @@ pub trait Function {
 }
 
 pub struct FullFunction {
-    name: String,
     params: Vec<String>,
     content: String,
     regex: Regex,
 }
 
 pub struct InlineFunction {
-    name: String,
     params: String,
     content: String,
     regex: Regex,
@@ -39,7 +37,6 @@ impl Function for FullFunction {
             content,
             regex: Regex::new(&format!(r"{}\((.*?)\)", regex::escape(&name)))
                 .expect("Generated regex should be valid."),
-            name: String::from(name.trim()),
         })
     }
     fn invoke(&self, content: &mut String) -> Result<(), String> {
@@ -121,7 +118,6 @@ impl Function for InlineFunction {
             content,
             regex: Regex::new(&format!(r"{}\((.*?)\)", regex::escape(&name)))
                 .expect("Generated regex should be valid."),
-            name,
         })
     }
     fn invoke(&self, content: &mut String) -> Result<(), String> {
