@@ -25,4 +25,4 @@ pub const HORIZONTAL_LINE_REGEX: &str = r"^-{3,}";
 pub const ANTI_META_REGEX: &str = r"<body>(<br \/>)+";
 pub const SCRIPT_REGEX: &str = r"<script>([\s\S]*?)</script>";
 pub const SHORT_FUNC_REGEX: &str = r"\|\*([^|]*)\|\s*(.*)";
-pub const FULL_FUNC_REGEX: &str = r"fn (\S+) \(\*([^)]*)\):\s*(.*)";
+pub const FULL_FUNC_REGEX: &str = r"fn (\S+) \(([^)]*)\):\s*(.*)";

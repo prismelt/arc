@@ -1,6 +1,7 @@
 use super::patterns::RegexPattern;
 use super::token::{Token, TokenKind};
 use super::traits::LexerTrait;
+use crate::funcs::process::FunctionProcessor;
 use crate::utilities::constants::{COMMENT_REGEX, CRLF_REGEX};
 use fancy_regex::Regex;
 use std::time::{Duration, Instant};
@@ -23,7 +24,7 @@ impl LexerTrait for Lexer {
         let timeout = Duration::from_secs(1);
         let start_time = Instant::now();
 
-        self.preprocess();
+        self.preprocess()?;
         let patterns_start_of_line = RegexPattern::<Lexer>::get_full_regex();
         let patterns_not_start_of_line = RegexPattern::<Lexer>::get_inline_regex();
         let mut previous_token_is_eol = true;
@@ -48,7 +49,7 @@ impl LexerTrait for Lexer {
                         if matched_str.as_str().len() == 0 {
                             return Err("Lexer: tokenize: zero length match".to_string());
                         };
-                        (pattern.handler)(&mut self, matched_str);
+                        (pattern.handler)(&mut self, matched_str)?;
                         previous_token_is_eol = self
                             .token
                             .last()
@@ -81,12 +82,16 @@ impl LexerTrait for Lexer {
 }
 
 impl Lexer {
-    fn preprocess(&mut self) {
-        self.source = self.source.replace("\r\n", "\n").replace("\r", "\n");
+    fn preprocess(&mut self) -> Result<(), String> {
+        let mut source = self.source.replace("\r\n", "\n").replace("\r", "\n");
         let crlf_regex = Regex::new(CRLF_REGEX).unwrap();
-        self.source = crlf_regex.replace_all(&self.source, "").to_string();
+        source = crlf_regex.replace_all(&source, "").to_string();
         let comment_regex = Regex::new(COMMENT_REGEX).unwrap();
-        self.source = comment_regex.replace_all(&self.source, "").to_string();
+        source = comment_regex.replace_all(&source, "").to_string();
+
+        let fp = FunctionProcessor::new(source);
+        self.source = fp.process()?;
+        Ok(())
     }
 
     fn at_eof(&self) -> bool {

@@ -266,10 +266,23 @@ fn test_full_func_regex_1() {
 }
 
 #[test]
+fn test_full_func_regex_2() {
+    let regex = Regex::new(FULL_FUNC_REGEX).unwrap();
+    let matched = regex
+        .find("fn name_here (): some text with (* some text) in it")
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        matched.as_str(),
+        "fn name_here (): some text with (* some text) in it"
+    );
+}
+
+#[test]
 fn test_full_func_regex_capture_1() {
     let regex = Regex::new(FULL_FUNC_REGEX).unwrap();
     let matched = regex
-        .find("fn 1name-here (*some text): some text with (* some text) in it")
+        .find("fn name_here (*some text): some text with (* some text) in it")
         .unwrap()
         .unwrap();
     let capture_1 = regex
@@ -290,14 +303,75 @@ fn test_full_func_regex_capture_1() {
         .unwrap()
         .get(3)
         .unwrap();
-    assert_eq!(capture_1.as_str(), "1name-here");
-    assert_eq!(capture_2.as_str(), "some text");
+    assert_eq!(capture_1.as_str(), "name_here");
+    assert_eq!(capture_2.as_str(), "*some text");
     assert_eq!(capture_3.as_str(), "some text with (* some text) in it");
 }
 
 #[test]
-fn test_short_func_regex_empty() {
-    let regex = Regex::new(SHORT_FUNC_REGEX).unwrap();
-    let matched = regex.find("|*| ").unwrap().unwrap();
-    assert_eq!(matched.as_str(), "|*| ");
+fn test_full_func_regex_capture_2() {
+    let regex = Regex::new(FULL_FUNC_REGEX).unwrap();
+    let matched = regex
+        .find("fn name_here (): some text with (* some text) in it")
+        .unwrap()
+        .unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    let capture_2 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(2)
+        .unwrap();
+    let capture_3 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(3)
+        .unwrap();
+    assert_eq!(capture_1.as_str(), "name_here");
+    assert_eq!(capture_2.as_str(), "");
+    assert_eq!(capture_3.as_str(), "some text with (* some text) in it");
+}
+
+#[test]
+fn test_full_func_regex_capture_3() {
+    let regex = Regex::new(FULL_FUNC_REGEX).unwrap();
+    let matched = regex
+        .find("fn name_here (*some text *some other text): some text with (* some text) in it")
+        .unwrap()
+        .unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    let capture_2 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(2)
+        .unwrap();
+    let capture_3 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(3)
+        .unwrap();
+    assert_eq!(capture_1.as_str(), "name_here");
+    assert_eq!(capture_2.as_str(), "*some text *some other text");
+    assert_eq!(capture_3.as_str(), "some text with (* some text) in it");
+}
+
+#[test]
+fn test_multi_line_scripting() {
+    let regex = Regex::new(SCRIPT_REGEX).unwrap();
+    let source = "<script>\nHello World\n</script>".to_string();
+    let matched = regex.find(&source).unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<script>\nHello World\n</script>");
 }

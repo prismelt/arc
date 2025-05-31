@@ -1,5 +1,8 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 mod args;
-// mod funcs; // todo: implement real functions afterwards
+mod funcs;
 mod lexer;
 mod parse;
 mod test;

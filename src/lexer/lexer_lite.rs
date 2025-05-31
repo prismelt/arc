@@ -30,7 +30,7 @@ impl LexerTrait for LexerLite {
                         if matched_str.as_str().len() == 0 {
                             return Err("Lexer: tokenize: zero length match".to_string());
                         }
-                        (pattern.handler)(&mut self, matched_str);
+                        (pattern.handler)(&mut self, matched_str)?;
                         continue 'outer;
                     }
                 }
