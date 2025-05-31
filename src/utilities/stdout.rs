@@ -3,6 +3,7 @@ use colored::Colorize as _;
 #[macro_export]
 macro_rules! warn {
     ($fmt:expr $(, $($arg:tt)*)?) => {
+        #[allow(unused_imports)]
         use colored::Colorize as _;
         let formatted_message = format!($fmt $(, $($arg)*)?);
         println!("{}", formatted_message.bold().yellow())
