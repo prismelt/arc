@@ -18,6 +18,7 @@ Markdown is a great tool, but it has its limitations. Including html-resembled c
 - 🛡️ **Memory Safe:** Built on Rust's ownership system.
 - ✅ **Extensible:** Designed with future expansion in mind.
 - 📄 **Human-Readable:** Clear and concise syntax.
+- 🔧 **Function Support:** Write reusable functions and that eradicate boilerplate.
 
 ## 📖 Syntax
 

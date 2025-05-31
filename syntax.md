@@ -134,6 +134,113 @@ The following features are supported:
 
 Use `<math ... />` to create an inline math element. Use `<math> ... </math>` to create a block math element. The content inside math element is rendered as is, without any parsing.
 
+### Functions(macros): Meta programming
+
+All the function must be written between the `<script>` and `</script>` tag. You can have as much of them as you want, but keeping them at the top of the document could resolve the issue of unexpected `\n` in the document.
+
+To define a function, use the following syntax:
+
+```arc
+fn <name>(*<arg1> *<arg2> ... *<argn>): <body>
+```
+
+Then inject the `args` into the body:
+
+```arc
+fn <name>(...): <*arg1 *arg2>
+```
+
+Other character will be treated as constant:
+
+```arc
+fn <name>(...): <*args and after the argument everything is constant>
+```
+
+Call the function with:
+
+```arc
+<name>(%<arg1> %<arg2> ... %<argn>)
+```
+
+For example,
+
+```arc
+/// function definition:
+<script>
+fn $foo(*a *b): A string with *a and *b
+</script>
+
+/// function call:
+$foo(%1 %2) /// return 'A string with 1 and 2'
+$foo(%Hello %World) /// return 'A string with Hello and World'
+$foo(%only one argument) /// error!
+$foo(%No space between% arguments) /// error!
+```
+
+Function could also take no argument:
+
+```arc
+<script>
+fn $first-program(): Hello, world!
+</script>
+$first-program() /// return 'Hello, world!'
+```
+
+And, of course, add function call inside the content, not just at the start of the line.
+
+```arc
+<script>
+fn $foo(*a *b): A string with *a and *b
+</script>
+This is a string with $foo(%1 %2) and $foo(%Hello %World)
+/// return 'This is a string with A string with 1 and 2 and A string with Hello and World'
+```
+
+The beauty of function is that they can reduce the amount of typing and amount of error you may encounter.
+
+For example:
+
+```arc
+<script>
+fn $title-style(*a): \(%[white:40:black] *a)
+</script>
+$title-style(%Hello, world!) /// return '\(%[white:40:black] Hello, world!)'
+```
+
+This could eliminate the error writing `%[white:40:black] Hello, world!` to `%white:40:black [Hello, world!]`
+
+We suggest add a `$` prefix to the function name to avoid conflict with actual document content. However, this is not required, but a RuntimeWarning will be invoked without a `$` prefix.
+
+Warning:
+
+Notice naming functions similarly could be dangerous. If one function named `e` and another one named `apple` and `e` is defined before `apple`, then calling `apple()` may actually becomes `appl` + `e()`.
+
+## Simpler Syntax use Inline Functions
+
+In practice, because most function takes only one argument, like this:
+
+```arc
+fn $red(*a): \(%[red] *a)
+```
+
+We provide a simpler syntax to define such function:
+
+```arc
+|*$red| \(%[red] *$red) /// work almost same as the above function
+```
+
+In this case, since the function takes only one argument, we can simplify and define the name and args using the same word `$red`.
+
+Because inline function take only one argument, we can also omit the `%` in the calling argument part:
+
+```arc
+<script>
+|*$red| \(%[red] *$red)
+</script>
+$red(Hello, world!) /// no % before argument is needed.
+/// return '\(%[red] Hello, world!)'
+```
+
 ## Bad Syntax
 
 Bad syntax could cause certain issues in Arc. Most of them will just be treated as string, however, certain error could cause undefined behavior, such as unclosed `\(` and `)` may lead to infinite loop. And invalid math tag could cause panic.
@@ -141,3 +248,15 @@ Bad syntax could cause certain issues in Arc. Most of them will just be treated 
 We do try to add timeout to prevent infinite loop, however, it's not actually working yet.
 
 ### More syntax coming soon!
+
+```
+
+```
+
+```
+
+```
+
+```
+
+```

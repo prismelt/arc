@@ -203,3 +203,17 @@ $foo(100) and $foo(%Hello, %world!)
         "100 and 100! and %Hello, %world! and %Hello, %world!!"
     );
 }
+
+#[test]
+fn test_inline_function_3() {
+    let content = r#"
+<script>
+|*$red| \(%[red] *$red)
+</script>
+$red(Hello, world!)
+"#;
+    let processor = FunctionProcessor::new(content.to_string());
+    let result = processor.process();
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap().trim(), r#"\(%[red] Hello, world!)"#);
+}
