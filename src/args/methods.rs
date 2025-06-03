@@ -6,26 +6,48 @@ use crate::parse::parse::Parser;
 use crate::utilities::stdout::show_success;
 use clap::CommandFactory as _;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
-use std::fs;
 use std::io::Write;
+use std::marker::Send;
 use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
+use tokio::fs as async_fs;
 
-pub fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
-    let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
-    let lexer = Lexer::new(src.clone());
-    let tokens = lexer.tokenize()?;
+async fn timeout<T: Send + 'static>(
+    task: impl FnOnce() -> Result<T, String> + Send + 'static,
+    duration: u64,
+) -> Result<T, String> {
+    let timeout_duration = Duration::from_millis(duration);
+    let actual_task = tokio::task::spawn_blocking(move || task());
+    let result = tokio::time::timeout(timeout_duration, actual_task)
+        .await
+        .map_err(|_| {
+            format!(
+                "Task timed out after {:.2} seconds",
+                timeout_duration.as_secs_f64()
+            )
+        })?
+        .map_err(|e| format!("Task panicked: {}", e))??;
+    Ok(result)
+}
 
-    let parser = Parser::new(tokens);
-    let document = parser.parse()?;
+pub async fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
+    let src = async_fs::read_to_string(&source)
+        .await
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+
+    let src_clone = src.clone();
+    let tokens = timeout(|| Lexer::new(src_clone).tokenize(), 1000).await?;
+    let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
     let html = document.build();
 
     if let Some(output_path) = output_path {
-        fs::write(&output_path, html).map_err(|e| format!("Failed to write to file: {}", e))?;
+        async_fs::write(&output_path, html)
+            .await
+            .map_err(|e| format!("Failed to write to file: {}", e))?;
         show_success(&format!(
             "Success! HTML saved to {}",
             &output_path.display()
@@ -49,7 +71,8 @@ pub fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), Stri
     };
 
     let output_path = parent.join(format!("{}.html", source_name));
-    fs::write(&output_path, format!("<!-- {} -->\n {}", src, html))
+    async_fs::write(&output_path, format!("<!-- {} -->\n {}", src, html))
+        .await
         .map_err(|e| format!("Failed to write to file: {}", e))?;
 
     show_success(&format!(
@@ -60,13 +83,13 @@ pub fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), Stri
     Ok(())
 }
 
-pub fn render(source: PathBuf) -> Result<(), String> {
-    let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
-    let lexer = Lexer::new(src.clone());
-    let tokens = lexer.tokenize()?;
-
-    let parser = Parser::new(tokens);
-    let document = parser.parse()?;
+pub async fn render(source: PathBuf) -> Result<(), String> {
+    let src = async_fs::read_to_string(&source)
+        .await
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+    // todo: change the timeout to normal
+    let tokens = timeout(|| Lexer::new(src).tokenize(), 1000).await?;
+    let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
     let html = document.build();
 
     let listener =
@@ -148,21 +171,17 @@ fn handle_request(mut stream: TcpStream, html: &str) {
 }
 
 fn remove_style_for_pdf(html: String) -> Result<String, String> {
-    // let regex = Regex::new(STYLE_REGEX).expect("Hard coded regex should be valid.");
-
-    // let html = regex
-    //     .replacen(&html, 1, format!("<style>{}</style>", PDF_STYLE))
-    //     .to_string();
     Ok(html.replace("&nbsp;", " "))
 }
 
 pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
-    let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
-    let lexer = Lexer::new(src.clone());
-    let tokens = lexer.tokenize()?;
+    let src = async_fs::read_to_string(&source)
+        .await
+        .map_err(|e| format!("Failed to read file: {}", e))?;
 
-    let parser = Parser::new(tokens);
-    let document = parser.parse()?;
+    let tokens = timeout(|| Lexer::new(src).tokenize(), 1000).await?;
+
+    let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
     let html = document.build();
     let html = remove_style_for_pdf(html)?;
 
@@ -235,13 +254,15 @@ pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), 
         .print_to_pdf(None)
         .map_err(|e| format!("Failed to print to PDF: {}", e))?;
 
-    fs::write(&pdf_output_path, &pdf_data).map_err(|e| {
-        format!(
-            "Failed to write PDF to file {} : {}",
-            pdf_output_path.display(),
-            e
-        )
-    })?;
+    async_fs::write(&pdf_output_path, &pdf_data)
+        .await
+        .map_err(|e| {
+            format!(
+                "Failed to write PDF to file {} : {}",
+                pdf_output_path.display(),
+                e
+            )
+        })?;
 
     show_success(&format!("PDF saved to {}", pdf_output_path.display()));
 

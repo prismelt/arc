@@ -4,7 +4,6 @@ use super::traits::LexerTrait;
 use crate::funcs::process::FunctionProcessor;
 use crate::utilities::constants::{COMMENT_REGEX, CRLF_REGEX};
 use fancy_regex::Regex;
-use std::time::{Duration, Instant};
 
 pub struct Lexer {
     pub token: Vec<Token>,
@@ -21,19 +20,12 @@ impl LexerTrait for Lexer {
         }
     }
     fn tokenize(mut self) -> Result<Vec<Token>, String> {
-        let timeout = Duration::from_secs(1);
-        let start_time = Instant::now();
-
         self.preprocess()?;
         let patterns_start_of_line = RegexPattern::<Lexer>::get_full_regex();
         let patterns_not_start_of_line = RegexPattern::<Lexer>::get_inline_regex();
         let mut previous_token_is_eol = true;
 
         'outer: while !self.at_eof() {
-            if start_time.elapsed() > timeout {
-                return Err("Lexer: Tokenization timed out after 1 seconds".to_string());
-            }
-
             let reminder = self.reminder();
 
             let patterns_clone: &[RegexPattern<Lexer>] = if previous_token_is_eol {
@@ -53,7 +45,6 @@ impl LexerTrait for Lexer {
                         previous_token_is_eol = self
                             .token
                             .last()
-                            // info: if not token in the list,then it should be treated as if it was a new line
                             .unwrap_or(&Token::new(TokenKind::EndOfLine, None))
                             .kind
                             == TokenKind::EndOfLine;

@@ -14,8 +14,8 @@ async fn main() {
     let args = Args::parse();
 
     let res = match args.command {
-        Compile(compile_args) => compile(compile_args.file, compile_args.output),
-        Preview(render_args) => render(render_args.file),
+        Compile(compile_args) => compile(compile_args.file, compile_args.output).await,
+        Preview(render_args) => render(render_args.file).await,
         Build(build_args) => build(build_args.file, build_args.output).await,
         Help(help_args) => help(help_args.command),
     };
