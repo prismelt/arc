@@ -48,6 +48,9 @@ pub struct BuildArgs {
 
     #[arg(short, long, help = arg_style("Path to the output directory"))]
     pub output: Option<PathBuf>,
+
+    #[arg(short='H', long="from-html", help = arg_style("Whether build from html"))]
+    pub html: bool,
 }
 
 #[derive(ClapArgs)]

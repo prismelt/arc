@@ -3,8 +3,10 @@ use crate::lexer::lexer::Lexer;
 use crate::lexer::traits::LexerTrait;
 use crate::parse::meta::MetaProperties;
 use crate::parse::parse::Parser;
+use crate::utilities::constants::NAME_REGEX;
 use crate::utilities::stdout::show_success;
 use clap::CommandFactory as _;
+use fancy_regex::Regex;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
 use std::io::Write;
 use std::marker::Send;
@@ -87,7 +89,6 @@ pub async fn render(source: PathBuf) -> Result<(), String> {
     let src = async_fs::read_to_string(&source)
         .await
         .map_err(|e| format!("Failed to read file: {}", e))?;
-    // todo: change the timeout to normal
     let tokens = timeout(|| Lexer::new(src).tokenize(), 1000).await?;
     let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
     let html = document.build();
@@ -170,20 +171,51 @@ fn handle_request(mut stream: TcpStream, html: &str) {
     let _ = stream.flush();
 }
 
-fn remove_style_for_pdf(html: String) -> Result<String, String> {
-    Ok(html.replace("&nbsp;", " "))
+fn remove_style_for_pdf(html: String) -> String {
+    html.replace("&nbsp;", " ")
+        .replace(r"\", r"\\")
+        .replace("'", r"\'")
+        .replace(r#"""#, r#"\""#)
+        .replace("\n", r"\n")
+        .replace("\t", r"\t")
+        .replace("\t", r"\t")
 }
 
-pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
+fn find_name_from_txt(html: &str) -> Result<Option<String>, String> {
+    let regex = Regex::new(NAME_REGEX).expect("Hard coded regex should be valid.");
+    let captures = regex
+        .captures(html)
+        .map_err(|e| format!("Failed to capture: {}", e))?;
+
+    if let Some(capture) = captures {
+        let name = capture
+            .get(1)
+            .expect("Hard coded regex should have a capture group.")
+            .as_str();
+        Ok(Some(name.to_owned()))
+    } else {
+        Ok(None)
+    }
+}
+
+pub async fn build(
+    source: PathBuf,
+    output_path: Option<PathBuf>,
+    from_html: bool,
+) -> Result<(), String> {
     let src = async_fs::read_to_string(&source)
         .await
         .map_err(|e| format!("Failed to read file: {}", e))?;
 
-    let tokens = timeout(|| Lexer::new(src).tokenize(), 1000).await?;
+    let (html, document) = if from_html {
+        (src, None)
+    } else {
+        let tokens = timeout(|| Lexer::new(src).tokenize(), 1000).await?;
+        let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
+        (document.build(), Some(document))
+    };
 
-    let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
-    let html = document.build();
-    let html = remove_style_for_pdf(html)?;
+    let html: String = remove_style_for_pdf(html);
 
     let pdf_output_path = if let Some(path) = output_path {
         if path.extension().is_some() && path.extension().unwrap() == "pdf" {
@@ -192,27 +224,40 @@ pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), 
             path.with_extension("pdf")
         }
     } else {
-        if let Some(MetaProperties::Name(name)) = document
-            .meta
-            .iter()
-            .find(|m| matches!(m, MetaProperties::Name(_)))
-        {
-            PathBuf::from(name).with_extension("pdf")
+        if let Some(document) = document {
+            if let Some(MetaProperties::Name(name)) = document
+                .meta
+                .iter()
+                .find(|m| matches!(m, MetaProperties::Name(_)))
+            {
+                PathBuf::from(name).with_extension("pdf")
+            } else {
+                let parent = source.parent().unwrap_or(Path::new(""));
+                let source_file_stem = source
+                    .file_stem()
+                    .ok_or("Source path has no file name component")?
+                    .to_str()
+                    .ok_or("Source filename is not valid UTF-8")?;
+                parent.join(format!("{}.pdf", source_file_stem))
+            }
         } else {
-            let parent = source.parent().unwrap_or(Path::new(""));
-            let source_file_stem = source
-                .file_stem()
-                .ok_or("Source path has no file name component")?
-                .to_str()
-                .ok_or("Source filename is not valid UTF-8")?;
-
-            parent.join(format!("{}.pdf", source_file_stem))
+            if let Some(name) = find_name_from_txt(&html)? {
+                PathBuf::from(name).with_extension("pdf")
+            } else {
+                let parent = source.parent().unwrap_or(Path::new(""));
+                let source_file_stem = source
+                    .file_stem()
+                    .ok_or("Source path has no file name component")?
+                    .to_str()
+                    .ok_or("Source filename is not valid UTF-8")?;
+                parent.join(format!("{}.pdf", source_file_stem))
+            }
         }
     };
 
     let browser = Browser::new(
         LaunchOptionsBuilder::default()
-            .headless(false) // Set to false for visual debugging
+            .headless(true)
             .build()
             .map_err(|e| format!("Failed to build launch options: {}", e))?,
     )
@@ -228,21 +273,13 @@ pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), 
     tab.wait_until_navigated()
         .map_err(|e| format!("Failed to wait for navigation: {}", e))?;
 
-    let escaped_html = html
-        .replace(r"\", r"\\")
-        .replace("'", r"\'")
-        .replace(r#"""#, r#"\""#)
-        .replace("\n", r"\n")
-        .replace("\t", r"\t")
-        .replace("\t", r"\t");
-
     let javascript = format!(
         r#"
         document.open();
         document.write('{}');
         document.close();
     "#,
-        escaped_html
+        html
     );
 
     tab.evaluate(&javascript, false)
