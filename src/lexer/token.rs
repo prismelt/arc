@@ -1,6 +1,5 @@
 #[derive(Debug, PartialEq, Clone)]
 pub struct Token {
-    // info: this string is only included if the tokenKind contains a string
     pub value: Option<String>,
     pub kind: TokenKind,
 }
@@ -9,7 +8,6 @@ pub struct Token {
 pub enum TokenKind {
     EndOfLine,
     EOF,
-    // info: char style cannot be greedy, no ] can be inside the style syntax
     CharacterStyle,                 // %[{style syntax}] ==> %\[.*?\]
     MetaData,                       // <meta /> ==> <meta ([^\n]*) />
     UnorderedList,                  // - ==> -\s?
@@ -22,7 +20,7 @@ pub enum TokenKind {
     RightParenthesis,               // ) ==> ) \)
     LiteralRightParenthesis,        // \) ==> \\\)
     String,                         // ((?:[^()\\*]|\*(?:[^*]|$))+)
-    Link, // &[url] ==> &\[https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*\]
+    Link,                           // &[url] ==> &\[https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*\]
     Table,
     InlineMath,
     BlockMath,
