@@ -3,8 +3,11 @@ use crate::lexer::lexer::Lexer;
 use crate::lexer::traits::LexerTrait;
 use crate::parse::meta::MetaProperties;
 use crate::parse::parse::Parser;
+// use crate::utilities::constants::STYLE_REGEX;
 use crate::utilities::stdout::show_success;
+// use crate::utilities::style::PDF_STYLE;
 use clap::CommandFactory as _;
+// use fancy_regex::Regex;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
 use std::fs;
 use std::io::Write;
@@ -147,6 +150,15 @@ fn handle_request(mut stream: TcpStream, html: &str) {
     let _ = stream.flush();
 }
 
+fn remove_style_for_pdf(html: String) -> Result<String, String> {
+    // let regex = Regex::new(STYLE_REGEX).expect("Hard coded regex should be valid.");
+
+    // let html = regex
+    //     .replacen(&html, 1, format!("<style>{}</style>", PDF_STYLE))
+    //     .to_string();
+    Ok(html.replace("&nbsp;", " "))
+}
+
 pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
     let src = fs::read_to_string(&source).map_err(|e| format!("Failed to read file: {}", e))?;
     let lexer = Lexer::new(src.clone());
@@ -155,6 +167,7 @@ pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), 
     let parser = Parser::new(tokens);
     let document = parser.parse()?;
     let html = document.build();
+    let html = remove_style_for_pdf(html)?;
 
     let pdf_output_path = if let Some(path) = output_path {
         if path.extension().is_some() && path.extension().unwrap() == "pdf" {
@@ -183,7 +196,7 @@ pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), 
 
     let browser = Browser::new(
         LaunchOptionsBuilder::default()
-            .headless(true) // Set to false for visual debugging
+            .headless(false) // Set to false for visual debugging
             .build()
             .map_err(|e| format!("Failed to build launch options: {}", e))?,
     )
@@ -219,7 +232,7 @@ pub async fn build(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), 
     tab.evaluate(&javascript, false)
         .map_err(|e| format!("Failed to evaluate JavaScript: {}", e))?;
 
-    std::thread::sleep(std::time::Duration::from_millis(1000));
+    std::thread::sleep(std::time::Duration::from_millis(5000));
 
     let pdf_data = tab
         .print_to_pdf(None)

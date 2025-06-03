@@ -20,3 +20,11 @@ pub fn show_err<E>(res: Result<E, impl ToString>) {
 pub fn show_success(msg: &str) {
     println!("{}", msg.green());
 }
+
+pub fn command_style(text: &str) -> String {
+    format!("{}", text.green())
+}
+
+pub fn arg_style(text: &str) -> String {
+    format!("{}", text.cyan())
+}

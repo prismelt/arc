@@ -26,6 +26,7 @@ pub const ANTI_META_REGEX: &str = r"<body>(<br \/>)+";
 pub const SCRIPT_REGEX: &str = r"<script>([\s\S]*?)</script>";
 pub const SHORT_FUNC_REGEX: &str = r"\|\*([^|]*)\|\s*(.*)";
 pub const FULL_FUNC_REGEX: &str = r"fn (\S+)\s*\(([^)]*)\):\s*(.*)";
+// pub const STYLE_REGEX: &str = r"<style>.*?</style>";
 
 // pub const WHITESPACE_REPLACE_REGEX_1: &str = r" (?![^<]*>)";
 // pub const WHITESPACE_REPLACE_REGEX_2: &str = r#"(\w+\s*=\s*["'][^"']*?)&nbsp;([^"']*?["'])"#;

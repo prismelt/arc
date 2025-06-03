@@ -1,14 +1,6 @@
 use clap::{Args as ClapArgs, ColorChoice, Parser, Subcommand};
-use colored::*;
 use std::path::PathBuf;
-
-fn command_style(text: &str) -> String {
-    format!("{}", text.green())
-}
-
-fn arg_style(text: &str) -> String {
-    format!("{}", text.cyan())
-}
+use crate::utilities::stdout::{command_style, arg_style};
 
 #[derive(Parser)]
 #[command(
@@ -69,3 +61,4 @@ pub struct HelpArgs {
     #[arg(help = arg_style("The subcommand whose help message to display"))]
     pub command: Option<String>,
 }
+

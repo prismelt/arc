@@ -9,7 +9,6 @@ use args::methods::{build, compile, help, render};
 use clap::Parser as _;
 use utilities::stdout::show_err;
 
-// todo: fix whitespace by changing ' ' to &nbsp;
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
