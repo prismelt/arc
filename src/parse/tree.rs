@@ -86,6 +86,7 @@ impl Document {
             .replace("</li><br />", "</li>")
             .replace("<ol><br />", "<ol>")
             .replace("<ul><br />", "<ul>")
+            .replace("</pre><br />", "</pre>")
     }
 
     fn fix_whitespace(html: String) -> String {

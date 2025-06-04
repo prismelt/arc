@@ -98,6 +98,11 @@ pre {
   border-radius: 8px !important;
   overflow-x: auto !important;
 }
+code {
+  font-family: 'Cascadia Code', "JetBrains Mono", Menlo, Monaco, Consolas,
+    monospace !important;
+  font-variant-ligatures: common-ligatures !important;
+}
 code span {
   font-family: 'Cascadia Code', "JetBrains Mono", Menlo, Monaco, Consolas,
     monospace !important;
