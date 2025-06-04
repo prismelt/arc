@@ -47,18 +47,18 @@ impl Document {
             .join("<br />");
         let src = html!(
             (DOCTYPE)
-            html lang="en" {
+            html lang=(PreEscaped("en")) {
                 head {
                     (PreEscaped(meta))
-                    meta charset="UTF-8";
-                    meta name="viewport" content="width=device-width, initial-scale=1.0";
-                    link rel="preconnect" href="https://fonts.googleapis.com";
-                    link rel="preconnect" href="https://fonts.gstatic.com" crossorigin;
-                    link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet";
-                    link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet";
-                    script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" {}
-                    script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" {}
-                    script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" {}
+                    meta charset=(PreEscaped("UTF-8"));
+                    meta name=(PreEscaped("viewport")) content=(PreEscaped("width=device-width, initial-scale=1.0"));
+                    link rel=(PreEscaped("preconnect")) href=(PreEscaped("https://fonts.googleapis.com"));
+                    link rel=(PreEscaped("preconnect")) href=(PreEscaped("https://fonts.gstatic.com")) crossorigin;
+                    link href=(PreEscaped("https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css")) rel=(PreEscaped("stylesheet"));
+                    link href=(PreEscaped("https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap")) rel=(PreEscaped("stylesheet"));
+                    script src=(PreEscaped("https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js")) {};
+                    script src=(PreEscaped("https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js")) {};
+                    script src=(PreEscaped("https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js")) {};
                     style { (PreEscaped(STYLE)) }
                 }
                 body {
