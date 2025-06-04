@@ -27,3 +27,5 @@ pub const SCRIPT_REGEX: &str = r"<script>([\s\S]*?)</script>";
 pub const SHORT_FUNC_REGEX: &str = r"\|\*([^|]*)\|\s*(.*)";
 pub const FULL_FUNC_REGEX: &str = r"fn (\S+)\s*\(([^)]*)\):\s*(.*)";
 pub const NAME_REGEX: &str = r"<meta\s+name\s*=\s*([^>\s]+)\s*\/?>";
+pub const CODE_BLOCK_REGEX: &str = r"<code>([^\n]*)\n([\s\S]*?)<\/code>";
+pub const CODE_LANGUAGE_REGEX: &str = r":([^'\s]+)(?:\s+'([^']*)')?";

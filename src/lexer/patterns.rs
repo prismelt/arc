@@ -132,7 +132,42 @@ impl<L: LexerTrait> RegexPattern<L> {
         })
     }
 
-    pub fn get_full_regex() -> [RegexPattern<Lexer>; 20] {
+    pub fn code_handler() -> Box<dyn Fn(&mut Lexer, &Regex) -> Result<(), String>> {
+        Box::new(move |lexer: &mut Lexer, regex: &Regex| {
+            let reminder = lexer.reminder();
+            let matched = regex
+                .find(reminder)
+                .map_err(|e| format!("Lexer: code_handler receive a regex error: {}", e))?
+                .expect("Lexer: passed content should contain valid structure.");
+            let length = matched.range().len();
+            if length == 0 {
+                return Err(String::from("Lexer: code_handler: zero length match"));
+            }
+            let matched = matched.as_str();
+            let captures = regex
+                .captures(matched)
+                .map_err(|e| format!("Lexer: code_handler receive a regex error: {}", e))?
+                .expect("Lexer: passed content should contain valid structure.");
+            let language = captures
+                .get(1)
+                .expect("Lexer: hard coded code block pattern should have a capture group.")
+                .as_str();
+            let content = captures
+                .get(2)
+                .expect(
+                    "Lexer: hard coded code block pattern should have the second capture group.",
+                )
+                .as_str();
+            lexer.push(Token::new(
+                TokenKind::CodeBlock,
+                Some(format!("{}{}{}", language, "\n", content)),
+            ));
+            lexer.advance_n(length);
+            Ok(())
+        })
+    }
+
+    pub fn get_full_regex() -> [RegexPattern<Lexer>; 21] {
         [
             RegexPattern::new(
                 Regex::new(NEWLINE_REGEX).expect("Hard coded regex should be valid."),
@@ -149,6 +184,10 @@ impl<L: LexerTrait> RegexPattern<L> {
             RegexPattern::new(
                 Regex::new(BLOCK_MATH_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::BlockMath),
+            ),
+            RegexPattern::new(
+                Regex::new(CODE_BLOCK_REGEX).expect("Hard coded regex should be valid."),
+                RegexPattern::<Lexer>::code_handler(),
             ),
             RegexPattern::new(
                 Regex::new(INLINE_MATH_REGEX).expect("Hard coded regex should be valid."),

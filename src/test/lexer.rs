@@ -337,3 +337,70 @@ fn test_invalid_horizontal_line_1() {
     let tokens = lexer.tokenize().unwrap();
     assert!(!tokens.contains(&Token::new(TokenKind::HorizontalLine, None)));
 }
+
+#[test]
+fn test_code_1() {
+    let source = String::from("<code>:python\nprint('Hello World')</code>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0].kind, TokenKind::CodeBlock);
+    assert_eq!(
+        tokens[0].value,
+        Some(":python\nprint('Hello World')".to_string())
+    );
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}
+
+#[test]
+fn test_code_2() {
+    let source = String::from("<code>\nprint('Hello World')</code>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0].kind, TokenKind::CodeBlock);
+    assert_eq!(
+        tokens[0].value,
+        Some(String::from("\nprint('Hello World')"))
+    );
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}
+
+#[test]
+fn test_code_3() {
+    let source = String::from("<code>???\n<, > and /code inside\n</code>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0].kind, TokenKind::CodeBlock);
+    assert_eq!(
+        tokens[0].value,
+        Some(String::from("???\n<, > and /code inside\n"))
+    );
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}
+
+#[test]
+fn test_code_4() {
+    let source = String::from("<code>python, typescript and rust</code>"); // info: no \n
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    assert_eq!(tokens.len(), 2);
+    assert_ne!(tokens[0].kind, TokenKind::CodeBlock);
+    assert_ne!(
+        tokens[0].value,
+        Some(String::from("python, typescript and rust"))
+    );
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}
+
+#[test]
+fn test_empty_code() {
+    let source = String::from("<code>\n</code>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0].kind, TokenKind::CodeBlock);
+    assert_eq!(tokens[0].value, Some(String::from("\n")));
+    assert_eq!(tokens[1].kind, TokenKind::EOF);
+}

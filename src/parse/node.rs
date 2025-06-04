@@ -47,6 +47,7 @@ pub enum BlockedContent {
     PlainText(String),
     BlockMath(String),
     InlineMath(String),
+    CodeBlock(String, String),
 }
 
 #[derive(Debug)]
@@ -214,6 +215,9 @@ impl ASTNode {
             }
             BlockedContent::BlockMath(src) => {
                 html! { span { (PreEscaped(format!(r"$${}$$", src))) } }
+            }
+            BlockedContent::CodeBlock(language, src) => {
+                html! { pre { code class=(format!("language-{}", language)) { (src) } } }
             }
         }
     }

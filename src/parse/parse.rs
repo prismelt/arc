@@ -3,6 +3,8 @@ use super::node::{ASTNode, BlockedContent, Indicator, StyledSyntax};
 use super::table::parse_table;
 use super::tree::Document;
 use crate::lexer::token::{Token, TokenKind};
+use crate::utilities::constants::CODE_LANGUAGE_REGEX;
+use fancy_regex::Regex;
 
 #[derive(Debug)]
 pub struct Parser {
@@ -18,6 +20,8 @@ impl Parser {
         }
     }
     pub fn parse(mut self) -> Result<Document, String> {
+        let code_regex =
+            Regex::new(CODE_LANGUAGE_REGEX).expect("Hard coded regex should be valid.");
         while !self.at_eof() {
             let mut line: Vec<ASTNode> = Vec::new();
             while !self.at_end_of_line() && !self.at_eof() {
@@ -59,7 +63,48 @@ impl Parser {
                             indicate: Indicator::HorizontalLine,
                         });
                     }
-                    _ => {
+                    &TokenKind::CodeBlock => {
+                        let token = self.consume()?;
+                        let src = token
+                            .value
+                            .expect("Parser: CodeBlock should contain a value");
+                        let src_split = src.split_once("\n");
+                        let Some((language, content)) = src_split else {
+                            crate::warn!("Runtime Warning: Invalid code block syntax: {}", src);
+                            continue;
+                        };
+                        let language = if let Ok(Some(capture)) = code_regex.captures(language) {
+                            capture
+                                .get(1)
+                                .expect("Hard coded regex should have a capture group.")
+                                .as_str()
+                        } else {
+                            crate::warn!(
+                                "Runtime Warning: Code block with no language specified, Source:\n`{}`",
+                                src.trim()
+                            );
+                            ""
+                        };
+                        line.push(ASTNode::BlockedContent {
+                            content: BlockedContent::CodeBlock(
+                                String::from(language),
+                                String::from(content.trim_end()),
+                            ),
+                        });
+                    }
+                    &TokenKind::String
+                    | &TokenKind::Link
+                    | &TokenKind::Definition
+                    | &TokenKind::Bold
+                    | &TokenKind::Italic
+                    | &TokenKind::Heading
+                    | &TokenKind::BackSlashLeftParenthesisInline
+                    | &TokenKind::RightParenthesis
+                    | &TokenKind::LiteralRightParenthesis
+                    | &TokenKind::InlineMath
+                    | &TokenKind::EndOfLine
+                    | &TokenKind::EOF
+                    | &TokenKind::CharacterStyle => {
                         let result = self.parse_line()?;
                         line.push(result);
                     }

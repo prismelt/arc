@@ -429,3 +429,127 @@ fn test_multi_line_scripting() {
     let matched = regex.find(&source).unwrap().unwrap();
     assert_eq!(matched.as_str(), "<script>\nHello World\n</script>");
 }
+
+#[test]
+fn test_code_block_regex_1() {
+    let regex = Regex::new(CODE_BLOCK_REGEX).unwrap();
+    let matched = regex
+        .find("<code>python\nprint('Hello World')\n</code>")
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        matched.as_str(),
+        "<code>python\nprint('Hello World')\n</code>"
+    );
+}
+
+#[test]
+fn test_code_block_regex_2() {
+    let regex = Regex::new(CODE_BLOCK_REGEX).unwrap();
+    let matched = regex
+        .find("<code>???\n<, > and /code inside\n</code>")
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        matched.as_str(),
+        "<code>???\n<, > and /code inside\n</code>"
+    );
+}
+
+#[test]
+fn test_code_block_regex_3() {
+    let regex = Regex::new(CODE_BLOCK_REGEX).unwrap();
+    let matched = regex.find("<code>???\n<code/></code>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<code>???\n<code/></code>");
+}
+
+#[test]
+fn test_code_block_with_no_language() {
+    let regex = Regex::new(CODE_BLOCK_REGEX).unwrap();
+    let matched = regex.find("<code>\nHello World\n</code>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "<code>\nHello World\n</code>");
+}
+
+#[test]
+fn test_code_block_regex_capture_1() {
+    let regex = Regex::new(CODE_BLOCK_REGEX).unwrap();
+    let matched = regex
+        .find("<code>python\nprint('Hello World')\n</code>")
+        .unwrap()
+        .unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    let capture_2 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(2)
+        .unwrap();
+    assert_eq!(capture_1.as_str().trim(), "python");
+    assert_eq!(capture_2.as_str().trim(), "print('Hello World')");
+}
+
+#[test]
+fn test_code_block_regex_capture_2() {
+    let regex = Regex::new(CODE_BLOCK_REGEX).unwrap();
+    let matched = regex
+        .find("<code>\n<, > and /code inside\n</code>")
+        .unwrap()
+        .unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    let capture_2 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(2)
+        .unwrap();
+    assert_eq!(capture_1.as_str().trim(), "");
+    assert_eq!(capture_2.as_str().trim(), "<, > and /code inside");
+}
+
+#[test]
+fn test_code_language_regex() {
+    let regex = Regex::new(CODE_LANGUAGE_REGEX).unwrap();
+    let matched = regex.find(":python").unwrap().unwrap();
+    assert_eq!(matched.as_str(), ":python");
+}
+
+#[test]
+fn test_code_language_regex_2() {
+    let regex = Regex::new(CODE_LANGUAGE_REGEX).unwrap();
+    let matched = regex.find(":python 'Hello World'").unwrap().unwrap();
+    assert_eq!(matched.as_str(), ":python 'Hello World'");
+}
+
+#[test]
+#[should_panic]
+fn test_empty_language() {
+    let regex = Regex::new(CODE_LANGUAGE_REGEX).unwrap();
+    regex.find(":").unwrap().unwrap();
+}
+
+#[test]
+fn test_code_language_capture() {
+    let regex = Regex::new(CODE_LANGUAGE_REGEX).unwrap();
+    let matched = regex.find(":python").unwrap().unwrap();
+    let capture_1 = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+
+    let capture_2 = regex.captures(matched.as_str()).unwrap().unwrap().get(2);
+
+    assert_eq!(capture_1.as_str(), "python");
+    assert_eq!(capture_2, None);
+}

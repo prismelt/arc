@@ -397,7 +397,10 @@ fn test_parsing_math_1() {
     let document = parser.parse().unwrap();
 
     let html = document.build();
-    assert!(html.contains("<span>$$x = 1$$</span>"));
+    assert!(
+        html.replace("&nbsp;", " ")
+            .contains("<span>$$x = 1$$</span>")
+    );
 }
 
 #[test]
@@ -409,7 +412,10 @@ fn test_parsing_math_2() {
     let document = parser.parse().unwrap();
 
     let html = document.build();
-    assert!(html.contains("<span>\\(x = 1\\)</span>"));
+    assert!(
+        html.replace("&nbsp;", " ")
+            .contains("<span>\\(x = 1\\)</span>")
+    );
 }
 
 #[test]
@@ -421,7 +427,10 @@ fn test_parsing_math_3() {
     let document = parser.parse().unwrap();
 
     let html = document.build();
-    assert!(html.contains("<span>\\(x = 1\\)</span>"));
+    assert!(
+        html.replace("&nbsp;", " ")
+            .contains("<span>\\(x = 1\\)</span>")
+    );
 }
 
 #[test]
@@ -441,7 +450,10 @@ fn test_inline_math_inline() {
     let document = parser.parse().unwrap();
 
     let html = document.build();
-    assert!(html.contains("<span>\\(x = 1\\)</span>"));
+    assert!(
+        html.replace("&nbsp;", " ")
+            .contains("<span>\\(x = 1\\)</span>")
+    );
 }
 
 #[test]
@@ -506,4 +518,63 @@ fn test_invalid_horizontal_line_1() {
         _ => false,
     });
     assert!(!contains_horizontal);
+}
+
+#[test]
+fn test_code_1() {
+    let source = String::from("<code>:python\nprint('Hello World')</code>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    let parser = Parser::new(tokens);
+    let document = parser.parse().unwrap();
+
+    assert_eq!(document.nodes.len(), 1);
+    assert_eq!(document.nodes[0].len(), 1);
+    assert_eq!(
+        format!("{:?}", document.nodes[0][0]),
+        "BlockedContent { content: CodeBlock(\"python\", \"print('Hello World')\") }"
+    );
+}
+#[test]
+fn test_code_2() {
+    let source = String::from("<code>\nprint('Hello World')</code>");
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    let parser = Parser::new(tokens);
+    let document = parser.parse().unwrap();
+
+    assert_eq!(document.nodes.len(), 1);
+    assert_eq!(document.nodes[0].len(), 1);
+    assert_eq!(
+        format!("{:?}", document.nodes[0][0]),
+        "BlockedContent { content: CodeBlock(\"\", \"print('Hello World')\") }"
+    );
+}
+#[test]
+fn test_code_3() {
+    let source = String::from("<code>???\n<, > and /code inside\n</code>"); // no colon used
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    let parser = Parser::new(tokens);
+    let document = parser.parse().unwrap();
+
+    assert_eq!(document.nodes.len(), 1);
+    assert_eq!(document.nodes[0].len(), 1);
+    assert_eq!(
+        format!("{:?}", document.nodes[0][0]),
+        r#"BlockedContent { content: CodeBlock("", "<, > and /code inside") }"#
+    );
+}
+#[test]
+fn test_code_4() {
+    let source = String::from("<code>python, typescript and rust</code>"); // info: no \n
+    let lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    let parser = Parser::new(tokens);
+    let document = parser.parse().unwrap();
+
+    assert_ne!(
+        format!("{:?}", document.nodes[0][0]),
+        "BlockedContent { content: CodeBlock(\"python, typescript and rust\", \"\") }"
+    );
 }

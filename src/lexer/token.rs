@@ -25,6 +25,7 @@ pub enum TokenKind {
     InlineMath,
     BlockMath,
     HorizontalLine,
+    CodeBlock,
 }
 
 impl Token {

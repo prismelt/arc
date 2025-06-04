@@ -55,7 +55,10 @@ impl Document {
                     link rel="preconnect" href="https://fonts.googleapis.com";
                     link rel="preconnect" href="https://fonts.gstatic.com" crossorigin;
                     link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet";
+                    link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet";
                     script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" {}
+                    script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" {}
+                    script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" {}
                     style { (PreEscaped(STYLE)) }
                 }
                 body {
@@ -64,8 +67,8 @@ impl Document {
             }
         )
         .into_string();
-        let src = Self::replace_redundancy(src);
         let src = Self::fix_leading_br(src);
+        let src = Self::replace_redundancy(src);
         Self::fix_whitespace(src)
     }
 

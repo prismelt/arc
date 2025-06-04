@@ -42,8 +42,8 @@ pub async fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<()
         .map_err(|e| format!("Failed to read file: {}", e))?;
 
     let src_clone = src.clone();
-    let tokens = timeout(|| Lexer::new(src_clone).tokenize(), 1000).await?;
-    let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
+    let tokens = timeout(|| Lexer::new(src_clone).tokenize(), 5000).await?;
+    let document = timeout(|| Parser::new(tokens).parse(), 5000).await?;
     let html = document.build();
 
     if let Some(output_path) = output_path {
@@ -89,8 +89,8 @@ pub async fn render(source: PathBuf) -> Result<(), String> {
     let src = async_fs::read_to_string(&source)
         .await
         .map_err(|e| format!("Failed to read file: {}", e))?;
-    let tokens = timeout(|| Lexer::new(src).tokenize(), 1000).await?;
-    let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
+    let tokens = timeout(|| Lexer::new(src).tokenize(), 5000).await?;
+    let document = timeout(|| Parser::new(tokens).parse(), 5000).await?;
     let html = document.build();
 
     let listener =
@@ -210,8 +210,8 @@ pub async fn build(
     let (html, document) = if from_html {
         (src, None)
     } else {
-        let tokens = timeout(|| Lexer::new(src).tokenize(), 1000).await?;
-        let document = timeout(|| Parser::new(tokens).parse(), 1000).await?;
+        let tokens = timeout(|| Lexer::new(src).tokenize(), 5000).await?;
+        let document = timeout(|| Parser::new(tokens).parse(), 5000).await?;
         (document.build(), Some(document))
     };
 
