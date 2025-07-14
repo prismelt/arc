@@ -7,7 +7,6 @@ pub const STYLE: &str = r#"
   user-select: none;
   -webkit-user-select: none;
   cursor: default;
-  text-rendering: GeometricPrecision;
 }
 html,
 body {
@@ -79,6 +78,15 @@ table {
   font-size: 14px;
   border-collapse: collapse;
   margin: 1em 0;
+  max-width: 100% !important;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+td, th {
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 table td,
 table th {
