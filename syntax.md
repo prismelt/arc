@@ -215,7 +215,7 @@ Warning:
 
 Notice naming functions similarly could be dangerous. If one function named `e` and another one named `apple` and `e` is defined before `apple`, then calling `apple()` may actually becomes `appl` + `e()`.
 
-## Simpler Syntax use Inline Functions
+### Simpler Syntax use Inline Functions
 
 In practice, because most function takes only one argument, like this:
 
@@ -241,6 +241,23 @@ $red(Hello, world!) /// no % before argument is needed.
 /// return '\(%[red] Hello, world!)'
 ```
 
+### Code Block
+
+The code block is denoted by `<code> ... </code>`. The code block is terminated by `</code>`. The code block syntax is defined by a series of lines, separated by a newline. The first line is the language of the code block, and is denoted by `:language`. The language is optional. The following lines are the content of the code block.
+```arc
+<code>:langage 'command to execute'
+PRINT "HELLO, WORLD!"
+</code>
+```
+To replace part of the command with the content of the code block, use `%code` flag:
+```arc
+<code>:python 'python -c %code'
+print("Hello, world!")
+</code>
+```
+You are then execute it with `arx execute <file> -t <type>`. `Arx` stands for `Arc eXecution`, the sister CLI tool of `arc`. The stdout and stderr will be print to the console.
+
+
 ## Bad Syntax
 
 Bad syntax could cause certain issues in Arc. Most of them will just be treated as string, however, certain error could cause undefined behavior, such as unclosed `\(` and `)` may lead to infinite loop. And invalid math tag could cause panic.
@@ -248,15 +265,3 @@ Bad syntax could cause certain issues in Arc. Most of them will just be treated 
 We do try to add timeout to prevent infinite loop, however, it's not actually working yet.
 
 ### More syntax coming soon!
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```

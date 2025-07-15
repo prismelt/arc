@@ -34,7 +34,7 @@ pub enum Commands {
 
 #[derive(ClapArgs)]
 pub struct CompileArgs {
-    #[arg(help = arg_style("Path to the file to compile"))]
+    #[arg(help = arg_style("Path to the file to compile"), default_value = "new.txt")]
     pub file: PathBuf,
 
     #[arg(short, long, help = arg_style("Path to the output directory"))]
@@ -43,7 +43,7 @@ pub struct CompileArgs {
 
 #[derive(ClapArgs)]
 pub struct BuildArgs {
-    #[arg(help = arg_style("Path to the file to build"))]
+    #[arg(help = arg_style("Path to the file to build"), default_value = "new.txt")]
     pub file: PathBuf,
 
     #[arg(short, long, help = arg_style("Path to the output directory"))]
@@ -55,7 +55,7 @@ pub struct BuildArgs {
 
 #[derive(ClapArgs)]
 pub struct PreviewArgs {
-    #[arg(help = arg_style("Path to the rendered file"))]
+    #[arg(help = arg_style("Path to the rendered file"), default_value = "new.txt")]
     pub file: PathBuf,
 }
 

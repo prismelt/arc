@@ -2,3 +2,4 @@
 /dev
 *.py
 .vscode
+.idea

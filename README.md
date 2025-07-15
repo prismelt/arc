@@ -79,10 +79,14 @@ For now, you can build from source:
 arc compile <file> -o <output directory> # compile to html with an optional output path
 arc preview <file> # render the file directly in the browser
 arc build <file> -o <output directory> # build to pdf with an optional output path
+arc help <command> # print help for a specific command
 ```
-
-More CIL coming soon!
 
 ## 📜 License
 
 This project is licensed under the MIT License.
+
+## 👍 Latest Updates
+
+- Fix table overflow
+- Default value for arc preview, arc compile and arc build as new.txt

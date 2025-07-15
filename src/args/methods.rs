@@ -39,7 +39,7 @@ async fn timeout<T: Send + 'static>(
 pub async fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
     let src = async_fs::read_to_string(&source)
         .await
-        .map_err(|e| format!("Failed to read file: {}", e))?;
+        .map_err(|e| format!("Failed to read file {:?}: {}", source, e))?;
 
     let src_clone = src.clone();
     let tokens = timeout(|| Lexer::new(src_clone).tokenize(), 5000).await?;
@@ -88,7 +88,7 @@ pub async fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<()
 pub async fn render(source: PathBuf) -> Result<(), String> {
     let src = async_fs::read_to_string(&source)
         .await
-        .map_err(|e| format!("Failed to read file: {}", e))?;
+        .map_err(|e| format!("Failed to read file {:?}: {}", source, e))?;
     let tokens = timeout(|| Lexer::new(src).tokenize(), 5000).await?;
     let document = timeout(|| Parser::new(tokens).parse(), 5000).await?;
     let html = document.build();
@@ -205,7 +205,7 @@ pub async fn build(
 ) -> Result<(), String> {
     let src = async_fs::read_to_string(&source)
         .await
-        .map_err(|e| format!("Failed to read file: {}", e))?;
+        .map_err(|e| format!("Failed to read file {:?}: {}",source, e))?;
 
     let (html, document) = if from_html {
         (src, None)
