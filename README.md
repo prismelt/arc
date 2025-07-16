@@ -79,6 +79,7 @@ For now, you can build from source:
 arc compile <file> -o <output directory> # compile to html with an optional output path
 arc preview <file> # render the file directly in the browser
 arc build <file> -o <output directory> # build to pdf with an optional output path
+arc write <file> # write the file into standard library directory, if no file is provided, it will updated the formatting library of the stdlib
 arc help <command> # print help for a specific command
 ```
 

@@ -63,6 +63,15 @@ impl Parser {
                             indicate: Indicator::HorizontalLine,
                         });
                     }
+                    &TokenKind::HTMLContainer => {
+                        let token = self.consume()?;
+                        let src = token
+                            .value
+                            .expect("Parser: HTMLContainer should contain a value");
+                        line.push(ASTNode::BlockedContent {
+                            content: BlockedContent::HTMLContainer(src),
+                        });
+                    }
                     &TokenKind::CodeBlock => {
                         let token = self.consume()?;
                         let src = token

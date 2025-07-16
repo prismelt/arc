@@ -5,7 +5,7 @@ mod parse;
 mod test;
 mod utilities;
 use args::command::{Args, Commands::*};
-use args::methods::{build, compile, help, render};
+use args::methods::{build, compile, help, render, write};
 use clap::Parser as _;
 use utilities::stdout::show_err;
 
@@ -18,6 +18,7 @@ async fn main() {
         Preview(render_args) => render(render_args.file).await,
         Build(build_args) => build(build_args.file, build_args.output, build_args.html).await,
         Help(help_args) => help(help_args.command),
+        Write(write_args) => write(write_args.file),
     };
 
     show_err(res);

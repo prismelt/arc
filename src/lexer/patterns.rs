@@ -167,7 +167,7 @@ impl<L: LexerTrait> RegexPattern<L> {
         })
     }
 
-    pub fn get_full_regex() -> [RegexPattern<Lexer>; 21] {
+    pub fn get_full_regex() -> [RegexPattern<Lexer>; 22] {
         [
             RegexPattern::new(
                 Regex::new(NEWLINE_REGEX).expect("Hard coded regex should be valid."),
@@ -176,6 +176,10 @@ impl<L: LexerTrait> RegexPattern<L> {
             RegexPattern::new(
                 Regex::new(TABLE_CONTAINER_REGEX).expect("Hard coded regex should be valid."),
                 RegexPattern::capture_handler(TokenKind::Table),
+            ),
+            RegexPattern::new(
+                Regex::new(HTML_CONTAINER_REGEX).expect("Hard coded regex should be valid."),
+                RegexPattern::capture_handler(TokenKind::HTMLContainer),
             ),
             RegexPattern::new(
                 Regex::new(HORIZONTAL_LINE_REGEX).expect("Hard coded regex should be valid."),

@@ -257,11 +257,57 @@ print("Hello, world!")
 ```
 You are then execute it with `arx execute <file> -t <type>`. `Arx` stands for `Arc eXecution`, the sister CLI tool of `arc`. The stdout and stderr will be print to the console.
 
+### Importation of Functions
+
+You can import functions from other files using the `@include` syntax within your `<script>` tags, this simply replace the `include` statement with corresponding functions.
+```arc
+<script>
+/// this will pull out all the functions defined in the script file
+@include <path-to-your-script.txt>
+</script>
+```
+You can also import from standard library
+```arc
+<script>
+/// the standard text formatting library
+@include <std/fmt>
+/// the standard math formatting library
+@include <std/math>
+/// the standard chemistry formatting library
+@include <std/ce>
+</script>
+```
+Technical info: these files are stored as txt file in the `/Users/<username>/.arc/stdlib/<library-name>.txt`
+You can add your own library by adding a txt file in the same directory.
+
+### HTML
+Write raw html using the `---html!` syntax:
+
+```arc
+---html!
+<div>
+    <h1>Hello, world!</h1>
+</div>
+---
+```
+Notice: function will also work within the html block.
+```arc
+<script>
+fn $foo(*a *b): A string with *a and *b
+</script>
+---html!
+<div>
+    <h1>Hello, world!</h1>
+    <p>$foo(%1 %2)</p>
+</div>
+---
+
+```
 
 ## Bad Syntax
 
 Bad syntax could cause certain issues in Arc. Most of them will just be treated as string, however, certain error could cause undefined behavior, such as unclosed `\(` and `)` may lead to infinite loop. And invalid math tag could cause panic.
 
-We do try to add timeout to prevent infinite loop, however, it's not actually working yet.
+Timeout mechanism is implemented to prevent such issues, but it is not a perfect solution. Therefore, it is recommended to avoid bad syntax as much as possible.
 
 ### More syntax coming soon!

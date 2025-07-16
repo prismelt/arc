@@ -553,3 +553,70 @@ fn test_code_language_capture() {
     assert_eq!(capture_1.as_str(), "python");
     assert_eq!(capture_2, None);
 }
+
+#[test]
+fn test_import_regex() {
+    let regex = Regex::new(IMPORT_REGEX).unwrap();
+    let matched = regex.find("@include <test>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "@include <test>");
+}
+
+#[test]
+fn test_import_regex_2() {
+    let regex = Regex::new(IMPORT_REGEX).unwrap();
+    let matched = regex.find("@include <std/fmt>").unwrap().unwrap();
+    assert_eq!(matched.as_str(), "@include <std/fmt>");
+}
+
+#[test]
+fn test_import_regex_capture() {
+    let regex = Regex::new(IMPORT_REGEX).unwrap();
+    let matched = regex.find("@include <test>").unwrap().unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str(), "test");
+}
+
+#[test]
+fn test_import_regex_capture_2() {
+    let regex = Regex::new(IMPORT_REGEX).unwrap();
+    let matched = regex.find("@include <std/fmt>").unwrap().unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str(), "std/fmt");
+}
+
+#[test]
+fn test_html_regex() {
+    let regex = Regex::new(HTML_CONTAINER_REGEX).unwrap();
+    let matched = regex
+        .find("---html!\n<div>\n<p>Hello World</p>\n</div>\n---")
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        matched.as_str(),
+        "---html!\n<div>\n<p>Hello World</p>\n</div>\n---"
+    );
+}
+
+#[test]
+fn test_html_regex_capture() {
+    let regex = Regex::new(HTML_CONTAINER_REGEX).unwrap();
+    let matched = regex.find("---html!\n<div>\n<p>Hello World</p>\n</div>\n---").unwrap().unwrap();
+    let capture = regex
+        .captures(matched.as_str())
+        .unwrap()
+        .unwrap()
+        .get(1)
+        .unwrap();
+    assert_eq!(capture.as_str().trim(), "<div>\n<p>Hello World</p>\n</div>");
+}
+    

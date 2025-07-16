@@ -20,12 +20,13 @@ pub enum TokenKind {
     RightParenthesis,               // ) ==> ) \)
     LiteralRightParenthesis,        // \) ==> \\\)
     String,                         // ((?:[^()\\*]|\*(?:[^*]|$))+)
-    Link,                           // &[url] ==> &\[https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*\]
+    Link, // &[url] ==> &\[https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)*\]
     Table,
     InlineMath,
     BlockMath,
     HorizontalLine,
     CodeBlock,
+    HTMLContainer,
 }
 
 impl Token {

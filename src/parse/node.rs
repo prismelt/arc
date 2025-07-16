@@ -48,6 +48,7 @@ pub enum BlockedContent {
     BlockMath(String),
     InlineMath(String),
     CodeBlock(String, String),
+    HTMLContainer(String),
 }
 
 #[derive(Debug)]
@@ -195,7 +196,7 @@ impl ASTNode {
     fn build_definition(term: &str, definition: &str) -> Markup {
         html! {
             span {
-                span style="color: red;text-decoration: underline;" { (term) }
+                span style="color: red;text-decoration: underline;font-weight: bold;" { (term) }
                 ": "
                 span { (definition) }
             }
@@ -219,6 +220,7 @@ impl ASTNode {
             BlockedContent::CodeBlock(language, src) => {
                 html! { pre { code class=(format!("language-{}", language)) { (src) } } }
             }
+            BlockedContent::HTMLContainer(src) => html! { (PreEscaped(src)) },
         }
     }
 }
@@ -240,10 +242,7 @@ impl StyledSyntax {
                         background.build()
                     ));
                 }
-                CSSAttrs {
-                    class: None,
-                    style: style,
-                }
+                CSSAttrs { class: None, style }
             }
             StyledSyntax::Heading(level) => CSSAttrs {
                 class: Some(format!("h{}size", level)),
@@ -266,7 +265,7 @@ impl StyledSyntax {
         if let Err(err) = result {
             return Err(err);
         }
-        let tuple = result.unwrap();
+        let tuple = result?;
         Ok(Self::Style(tuple))
     }
 

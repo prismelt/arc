@@ -1,6 +1,6 @@
+use crate::utilities::stdout::{arg_style, command_style};
 use clap::{Args as ClapArgs, ColorChoice, Parser, Subcommand};
 use std::path::PathBuf;
-use crate::utilities::stdout::{command_style, arg_style};
 
 #[derive(Parser)]
 #[command(
@@ -27,9 +27,12 @@ pub enum Commands {
 
     #[command(about = command_style("Build and save the output to a PDF file"))]
     Build(BuildArgs),
-    
+
     #[command(about = command_style("Print this message or the help of the given subcommand(s)"))]
     Help(HelpArgs),
+
+    #[command(about = command_style("Write a file to the standard library"))]
+    Write(WriteArgs),
 }
 
 #[derive(ClapArgs)]
@@ -65,3 +68,8 @@ pub struct HelpArgs {
     pub command: Option<String>,
 }
 
+#[derive(ClapArgs)]
+pub struct WriteArgs {
+    #[arg(help = arg_style("Path to the file to write"))]
+    pub file: Option<PathBuf>,
+}

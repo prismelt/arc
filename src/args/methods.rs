@@ -4,6 +4,10 @@ use crate::lexer::traits::LexerTrait;
 use crate::parse::meta::MetaProperties;
 use crate::parse::parse::Parser;
 use crate::utilities::constants::NAME_REGEX;
+use crate::utilities::constants::STD_LIB_DIRECTORY;
+use crate::utilities::lib::ce::CE_CONTENT;
+use crate::utilities::lib::fmt::FMT_CONTENT;
+use crate::utilities::lib::math::MATH_CONTENT;
 use crate::utilities::stdout::show_success;
 use clap::CommandFactory as _;
 use fancy_regex::Regex;
@@ -14,8 +18,8 @@ use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::mpsc;
-use std::thread;
 use std::time::Duration;
+use std::{fs, thread};
 use tokio::fs as async_fs;
 
 async fn timeout<T: Send + 'static>(
@@ -131,7 +135,7 @@ pub async fn render(source: PathBuf) -> Result<(), String> {
         }
     });
 
-    thread::sleep(Duration::from_millis(100));
+    tokio::time::sleep(Duration::from_millis(100)).await;
 
     Command::new("open")
         .arg(&url)
@@ -205,7 +209,7 @@ pub async fn build(
 ) -> Result<(), String> {
     let src = async_fs::read_to_string(&source)
         .await
-        .map_err(|e| format!("Failed to read file {:?}: {}",source, e))?;
+        .map_err(|e| format!("Failed to read file {:?}: {}", source, e))?;
 
     let (html, document) = if from_html {
         (src, None)
@@ -306,6 +310,34 @@ pub async fn build(
     Ok(())
 }
 
+pub fn write(command: Option<PathBuf>) -> Result<(), String> {
+    if let Some(command) = command {
+        let ending = command
+            .file_stem()
+            .ok_or("Failed to get file stem")?
+            .to_str()
+            .ok_or("Failed to convert file stem to string")?;
+        fs::write(
+            format!("{}/{}.txt", STD_LIB_DIRECTORY, ending),
+            fs::read_to_string(&command)
+                .map_err(|e| format!("Failed to read file {:?}: {}", command, e))?,
+        )
+        .map_err(|e| format!("Failed to write to file {:?}: {}", command, e))?;
+
+        show_success(&format!("File written to {:?}", command));
+        Ok(())
+    } else {
+        fs::write(format!("{}/fmt.txt", STD_LIB_DIRECTORY), FMT_CONTENT)
+            .map_err(|e| format!("Failed to write to file {}: {}", STD_LIB_DIRECTORY, e))?;
+        fs::write(format!("{}/math.txt", STD_LIB_DIRECTORY), MATH_CONTENT)
+            .map_err(|e| format!("Failed to write to file {}: {}", STD_LIB_DIRECTORY, e))?;
+        fs::write(format!("{}/ce.txt", STD_LIB_DIRECTORY), CE_CONTENT)
+            .map_err(|e| format!("Failed to write to file {}: {}", STD_LIB_DIRECTORY, e))?;
+        show_success("Standard library updated!");
+        Ok(())
+    }
+}
+
 pub fn help(command: Option<String>) -> Result<(), String> {
     match command.as_deref() {
         Some("compile") => {
@@ -328,6 +360,14 @@ pub fn help(command: Option<String>) -> Result<(), String> {
             Args::command()
                 .find_subcommand_mut("build")
                 .ok_or_else(|| "Failed to find subcommand `build`")?
+                .print_help()
+                .map_err(|e| format!("Failed to print help: {}", e))?;
+            Ok(())
+        }
+        Some("write") => {
+            Args::command()
+                .find_subcommand_mut("write")
+                .ok_or_else(|| "Failed to find subcommand `write`")?
                 .print_help()
                 .map_err(|e| format!("Failed to print help: {}", e))?;
             Ok(())

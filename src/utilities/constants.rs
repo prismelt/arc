@@ -29,3 +29,6 @@ pub const FULL_FUNC_REGEX: &str = r"fn (\S+)\s*\(([^)]*)\):\s*(.*)";
 pub const NAME_REGEX: &str = r"<meta\s+name\s*=\s*([^>\s]+)\s*\/?>";
 pub const CODE_BLOCK_REGEX: &str = r"<code>([^\n]*)\n([\s\S]*?)<\/code>";
 pub const CODE_LANGUAGE_REGEX: &str = r":([^'\s]+)(?:\s+'([^']*)')?[\s]*";
+pub const HTML_CONTAINER_REGEX: &str = r"(?ms)^---\s*html!\s*\n(?P<content>.*?)\n---\s*$";
+pub const IMPORT_REGEX: &str = r"@include\s*<([^>]+)>";
+pub const STD_LIB_DIRECTORY: &str = r"/Users/main/.arc/stdlib/";

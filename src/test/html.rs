@@ -56,6 +56,6 @@ fn test_html_building_5() {
     let html = node.build();
     assert_eq!(
         html.into_string(),
-        "<span><span style=\"color: red;text-decoration: underline;\">term</span>: <span>definition</span></span>"
+        "<span><span style=\"color: red;text-decoration: underline;font-weight: bold;\">term</span>: <span>definition</span></span>"
     );
 }
