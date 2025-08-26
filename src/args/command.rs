@@ -4,10 +4,10 @@ use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(
-    author, 
-    version, 
-    about, 
-    long_about = None, 
+    author,
+    version,
+    about,
+    long_about = None,
     name = "Accelerated Markup Language",
     color = ColorChoice::Auto,
     disable_help_subcommand = true,
@@ -60,6 +60,8 @@ pub struct BuildArgs {
 pub struct PreviewArgs {
     #[arg(help = arg_style("Path to the rendered file"), default_value = "new.txt")]
     pub file: PathBuf,
+    #[arg(short, long, help = arg_style("Whether to enable live reloading"))]
+    pub live: bool,
 }
 
 #[derive(ClapArgs)]

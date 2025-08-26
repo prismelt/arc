@@ -1,8 +1,8 @@
 pub const STYLE: &str = r#"
-* {
+html {
   box-sizing: border-box;
   max-width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  font-family: "Comic Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   user-select: none;
   -webkit-user-select: none;

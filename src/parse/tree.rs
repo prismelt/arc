@@ -56,6 +56,7 @@ impl Document {
                     link rel=(PreEscaped("preconnect")) href=(PreEscaped("https://fonts.gstatic.com")) crossorigin;
                     link href=(PreEscaped("https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css")) rel=(PreEscaped("stylesheet"));
                     link href=(PreEscaped("https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap")) rel=(PreEscaped("stylesheet"));
+                    link href=(PreEscaped("https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap")) rel=(PreEscaped("stylesheet"));
                     script src=(PreEscaped("https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js")) {};
                     script src=(PreEscaped("https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js")) {};
                     script src=(PreEscaped("https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js")) {};

@@ -20,6 +20,12 @@ pub struct InlineFunction {
     regex: Regex,
 }
 
+pub struct MultiLineFunction {
+    params: Option<String>,
+    content: String,
+    regex: Regex,
+}
+
 impl Function for FullFunction {
     fn new(name: String, params: String, content: String) -> Result<Self, String> {
         let params = Self::parse_args(params)?;
@@ -140,6 +146,48 @@ impl Function for InlineFunction {
         if let Some(e) = validation_error {
             return Err(e);
         }
+        *content = result.to_string();
+        Ok(())
+    }
+}
+
+impl Function for MultiLineFunction {
+    fn new(name: String, params: String, content: String) -> Result<Self, String> {
+        let params = if params.trim().is_empty() {
+            None
+        } else {
+            Some(params.trim().to_string())
+        };
+        if name.trim().is_empty() {
+            return Err(format!("Invalid function name: {}, cannot be empty", name));
+        }
+        if !name.trim().starts_with("$") {
+            crate::warn!(
+                "Runtime Warning: function name should start with `$`, got {}",
+                name
+            );
+        }
+        Ok(MultiLineFunction {
+            params,
+            content,
+            regex: Regex::new(&format!(r"{}\(([\s\S]*?)\)", regex::escape(&name)))
+                .expect("Generated regex should be valid."),
+        })
+    }
+
+    fn invoke(&self, content: &mut String) -> Result<(), String> {
+        let result = self.regex.replace_all(content, |capture: &Captures<'_>| {
+            let args = capture
+                .get(1)
+                .expect("Generated regex should have a capture group.")
+                .as_str();
+
+            if let Some(params) = &self.params {
+                self.content.replace(params, args)
+            } else {
+                self.content.clone()
+            }
+        });
         *content = result.to_string();
         Ok(())
     }

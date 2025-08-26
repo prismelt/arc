@@ -32,3 +32,4 @@ pub const CODE_LANGUAGE_REGEX: &str = r":([^'\s]+)(?:\s+'([^']*)')?[\s]*";
 pub const HTML_CONTAINER_REGEX: &str = r"(?ms)^---\s*html!\s*\n(?P<content>.*?)\n---\s*$";
 pub const IMPORT_REGEX: &str = r"@include\s*<([^>]+)>";
 pub const STD_LIB_DIRECTORY: &str = r"/Users/main/.arc/stdlib/";
+pub const MULTI_LINE_FN_REGEX: &str = r"([^\s\(]+)\s*\(([^)]+)\)\s*\{\s*([\s\S]*?)\s*\}";

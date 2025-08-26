@@ -1,20 +1,23 @@
+use super::helper::confirm_overwrite;
+use super::helper::find_name_from_txt;
+use super::helper::handle_request;
+use super::helper::remove_style_for_pdf;
+use super::helper::timeout;
 use crate::args::command::Args;
 use crate::lexer::lexer::Lexer;
-use crate::lexer::traits::LexerTrait;
+use crate::lexer::traits::LexerTrait as _;
 use crate::parse::meta::MetaProperties;
 use crate::parse::parse::Parser;
-use crate::utilities::constants::NAME_REGEX;
+use crate::show_err;
 use crate::utilities::constants::STD_LIB_DIRECTORY;
 use crate::utilities::lib::ce::CE_CONTENT;
 use crate::utilities::lib::fmt::FMT_CONTENT;
 use crate::utilities::lib::math::MATH_CONTENT;
 use crate::utilities::stdout::show_success;
 use clap::CommandFactory as _;
-use fancy_regex::Regex;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
-use std::io::Write;
-use std::marker::Send;
-use std::net::{TcpListener, TcpStream};
+use std::net::Shutdown;
+use std::net::TcpListener;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::mpsc;
@@ -22,35 +25,17 @@ use std::time::Duration;
 use std::{fs, thread};
 use tokio::fs as async_fs;
 
-async fn timeout<T: Send + 'static>(
-    task: impl FnOnce() -> Result<T, String> + Send + 'static,
-    duration: u64,
-) -> Result<T, String> {
-    let timeout_duration = Duration::from_millis(duration);
-    let actual_task = tokio::task::spawn_blocking(move || task());
-    let result = tokio::time::timeout(timeout_duration, actual_task)
-        .await
-        .map_err(|_| {
-            format!(
-                "Task timed out after {:.2} seconds",
-                timeout_duration.as_secs_f64()
-            )
-        })?
-        .map_err(|e| format!("Task panicked: {}", e))??;
-    Ok(result)
-}
-
 pub async fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<(), String> {
     let src = async_fs::read_to_string(&source)
         .await
         .map_err(|e| format!("Failed to read file {:?}: {}", source, e))?;
-
     let src_clone = src.clone();
-    let tokens = timeout(|| Lexer::new(src_clone).tokenize(), 5000).await?;
+    let tokens = timeout(|| Lexer::new(src).tokenize(), 5000).await?;
     let document = timeout(|| Parser::new(tokens).parse(), 5000).await?;
     let html = document.build();
 
     if let Some(output_path) = output_path {
+        confirm_overwrite(&output_path)?;
         async_fs::write(&output_path, html)
             .await
             .map_err(|e| format!("Failed to write to file: {}", e))?;
@@ -77,7 +62,12 @@ pub async fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<()
     };
 
     let output_path = parent.join(format!("{}.html", source_name));
-    async_fs::write(&output_path, format!("<!-- {} -->\n {}", src, html))
+    confirm_overwrite(&output_path)?;
+
+    async_fs::write(
+        &output_path,
+        format!("<!-- {} -->\n{}", src_clone, html.replace("\n", "")),
+    )
         .await
         .map_err(|e| format!("Failed to write to file: {}", e))?;
 
@@ -90,13 +80,6 @@ pub async fn compile(source: PathBuf, output_path: Option<PathBuf>) -> Result<()
 }
 
 pub async fn render(source: PathBuf) -> Result<(), String> {
-    let src = async_fs::read_to_string(&source)
-        .await
-        .map_err(|e| format!("Failed to read file {:?}: {}", source, e))?;
-    let tokens = timeout(|| Lexer::new(src).tokenize(), 5000).await?;
-    let document = timeout(|| Parser::new(tokens).parse(), 5000).await?;
-    let html = document.build();
-
     let listener =
         TcpListener::bind("127.0.0.1:0").map_err(|e| format!("Failed to bind to port: {}", e))?;
 
@@ -109,6 +92,9 @@ pub async fn render(source: PathBuf) -> Result<(), String> {
 
     let (shutdown_tx, shutdown_rx) = mpsc::channel();
 
+    let rt_handle = tokio::runtime::Handle::current();
+    let source_clone = source.clone();
+
     let server_handle = thread::spawn(move || {
         listener
             .set_nonblocking(true)
@@ -120,22 +106,26 @@ pub async fn render(source: PathBuf) -> Result<(), String> {
             }
 
             match listener.accept() {
-                Ok((stream, _)) => {
-                    handle_request(stream, &html);
+                Ok((mut stream, _)) => {
+                    let res = rt_handle.block_on(handle_request(&mut stream, &source_clone));
+                    show_err(res);
+
+                    let _ = stream.shutdown(Shutdown::Both);
                 }
                 Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                    thread::sleep(Duration::from_millis(300));
+                    thread::sleep(Duration::from_millis(100));
                     continue;
                 }
                 Err(e) => {
-                    eprintln!("Error accepting connection: {}", e);
+                    show_err(Err::<(), String>(format!(
+                        "Failed to accept connection: {}",
+                        e
+                    )));
                     break;
                 }
             }
         }
     });
-
-    tokio::time::sleep(Duration::from_millis(100)).await;
 
     Command::new("open")
         .arg(&url)
@@ -156,50 +146,6 @@ pub async fn render(source: PathBuf) -> Result<(), String> {
 
     show_success("Preview server stopped!");
     Ok(())
-}
-
-fn handle_request(mut stream: TcpStream, html: &str) {
-    let response = format!(
-        "HTTP/1.1 200 OK\r\n\
-         Content-Type: text/html; charset=utf-8\r\n\
-         Content-Length: {}\r\n\
-         Cache-Control: no-cache\r\n\
-         Connection: close\r\n\
-         \r\n\
-         {}",
-        html.len(),
-        html
-    );
-
-    let _ = stream.write_all(response.as_bytes());
-    let _ = stream.flush();
-}
-
-fn remove_style_for_pdf(html: String) -> String {
-    html.replace("&nbsp;", " ")
-        .replace(r"\", r"\\")
-        .replace("'", r"\'")
-        .replace(r#"""#, r#"\""#)
-        .replace("\n", r"\n")
-        .replace("\t", r"\t")
-        .replace("\t", r"\t")
-}
-
-fn find_name_from_txt(html: &str) -> Result<Option<String>, String> {
-    let regex = Regex::new(NAME_REGEX).expect("Hard coded regex should be valid.");
-    let captures = regex
-        .captures(html)
-        .map_err(|e| format!("Failed to capture: {}", e))?;
-
-    if let Some(capture) = captures {
-        let name = capture
-            .get(1)
-            .expect("Hard coded regex should have a capture group.")
-            .as_str();
-        Ok(Some(name.to_owned()))
-    } else {
-        Ok(None)
-    }
 }
 
 pub async fn build(
@@ -258,6 +204,7 @@ pub async fn build(
             }
         }
     };
+    confirm_overwrite(&pdf_output_path)?;
 
     let browser = Browser::new(
         LaunchOptionsBuilder::default()
@@ -265,7 +212,7 @@ pub async fn build(
             .build()
             .map_err(|e| format!("Failed to build launch options: {}", e))?,
     )
-    .map_err(|e| format!("Failed to launch browser: {}", e))?;
+        .map_err(|e| format!("Failed to launch browser: {}", e))?;
 
     let tab = browser
         .new_tab()
@@ -322,7 +269,7 @@ pub fn write(command: Option<PathBuf>) -> Result<(), String> {
             fs::read_to_string(&command)
                 .map_err(|e| format!("Failed to read file {:?}: {}", command, e))?,
         )
-        .map_err(|e| format!("Failed to write to file {:?}: {}", command, e))?;
+            .map_err(|e| format!("Failed to write to file {:?}: {}", command, e))?;
 
         show_success(&format!("File written to {:?}", command));
         Ok(())

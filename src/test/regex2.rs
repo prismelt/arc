@@ -610,7 +610,10 @@ fn test_html_regex() {
 #[test]
 fn test_html_regex_capture() {
     let regex = Regex::new(HTML_CONTAINER_REGEX).unwrap();
-    let matched = regex.find("---html!\n<div>\n<p>Hello World</p>\n</div>\n---").unwrap().unwrap();
+    let matched = regex
+        .find("---html!\n<div>\n<p>Hello World</p>\n</div>\n---")
+        .unwrap()
+        .unwrap();
     let capture = regex
         .captures(matched.as_str())
         .unwrap()
@@ -619,4 +622,3 @@ fn test_html_regex_capture() {
         .unwrap();
     assert_eq!(capture.as_str().trim(), "<div>\n<p>Hello World</p>\n</div>");
 }
-    

@@ -1,13 +1,16 @@
-use crate::funcs::structs::{FullFunction, Function as _, InlineFunction};
+use crate::funcs::structs::{FullFunction, Function as _, InlineFunction, MultiLineFunction};
 use crate::utilities::constants::STD_LIB_DIRECTORY;
-use crate::utilities::constants::{FULL_FUNC_REGEX, IMPORT_REGEX, SCRIPT_REGEX, SHORT_FUNC_REGEX, COMMENT_REGEX};
+use crate::utilities::constants::{
+    COMMENT_REGEX, FULL_FUNC_REGEX, IMPORT_REGEX, SCRIPT_REGEX, SHORT_FUNC_REGEX, MULTI_LINE_FN_REGEX,
+};
 use fancy_regex::{Captures, Regex};
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 pub struct FunctionProcessor {
     full_functions: Vec<FullFunction>,
     inline_functions: Vec<InlineFunction>,
+    multi_line_functions: Vec<MultiLineFunction>,
     content: String,
 }
 
@@ -16,6 +19,7 @@ impl FunctionProcessor {
         Self {
             full_functions: Vec::new(),
             inline_functions: Vec::new(),
+            multi_line_functions: Vec::new(),
             content,
         }
     }
@@ -23,6 +27,8 @@ impl FunctionProcessor {
         let mut script_content = self.extract_script_content()?;
         self.full_functions = Self::extract_full_functions(&mut script_content)?;
         self.inline_functions = Self::extract_inline_functions(&mut script_content)?;
+        self.multi_line_functions =
+            Self::extract_multi_line_functions(&mut script_content)?;
 
         if !(script_content.trim().is_empty()) {
             return Err(format!(
@@ -35,6 +41,9 @@ impl FunctionProcessor {
             func.invoke(&mut self.content)?;
         }
         for func in self.inline_functions {
+            func.invoke(&mut self.content)?;
+        }
+        for func in self.multi_line_functions {
             func.invoke(&mut self.content)?;
         }
         Ok(self.content)
@@ -54,7 +63,12 @@ impl FunctionProcessor {
                         .get(1)
                         .expect("Hard coded regex should have a capture group.")
                         .as_str();
-                    fancy_output.push(Self::handle_import(capture, &import_regex, &comment_regex, &script_regex));
+                    fancy_output.push(Self::handle_import(
+                        capture,
+                        &import_regex,
+                        &comment_regex,
+                        &script_regex,
+                    ));
                 }
                 None => break,
                 Some(Err(e)) => return Err(format!("Regex error: {}", e)),
@@ -65,7 +79,12 @@ impl FunctionProcessor {
         Ok(fancy_output.join("\n"))
     }
 
-    fn handle_import(content: &str, import_regex: &Regex, comment_regex: &Regex, script_regex: &Regex) -> String {
+    fn handle_import(
+        content: &str,
+        import_regex: &Regex,
+        comment_regex: &Regex,
+        script_regex: &Regex,
+    ) -> String {
         import_regex
             .replace_all(content, |capture: &Captures<'_>| {
                 let path = capture
@@ -89,10 +108,14 @@ impl FunctionProcessor {
             PathBuf::from(path)
         };
         if !path.exists() {
-            crate::warn!("Runtime Warning: Import path does not exist: {:?}, recheck import path or try arc write for stdlib importation.", path);
+            crate::warn!(
+                "Runtime Warning: Import path does not exist: {:?}, recheck import path or try arc write for stdlib importation.",
+                path
+            );
             return String::new();
         }
-        let string = fs::read_to_string(path).expect("Failed to read import file, path should exist.");
+        let string =
+            fs::read_to_string(path).expect("Failed to read import file, path should exist.");
 
         let reminder = comment_regex.replace_all(&string, "").to_string();
 
@@ -114,7 +137,7 @@ impl FunctionProcessor {
                     break;
                 }
             }
-        };
+        }
         fancy_output.join("\n")
     }
 
@@ -181,4 +204,38 @@ impl FunctionProcessor {
         *content = regex.replace_all(content, "").to_string();
         Ok(inline_functions)
     }
+    
+    fn extract_multi_line_functions(content: &mut String) -> Result<Vec<MultiLineFunction>, String> {
+        let regex = Regex::new(MULTI_LINE_FN_REGEX).expect("Hard coded regex should be valid.");
+        let mut multi_line_functions: Vec<MultiLineFunction> = Vec::new();
+        let mut matches = regex.captures_iter(content);
+        loop {
+            match matches.next() {
+                Some(Ok(m)) => {
+                    let name = m
+                        .get(1)
+                        .expect("Hard coded regex should have a capture group.")
+                        .as_str();
+                    let args = m
+                        .get(2)
+                        .expect("Hard coded regex should have a capture group.")
+                        .as_str();
+                    let body = m
+                        .get(3)
+                        .expect("Hard coded regex should have a capture group.")
+                        .as_str();
+                    let function = MultiLineFunction::new(
+                        String::from(name),
+                        String::from(args),
+                        String::from(body),
+                    )?;
+                    multi_line_functions.push(function);
+                }
+                None => break,
+                Some(Err(e)) => return Err(format!("Regex error: {}", e)),
+            }
+        }
+        *content = regex.replace_all(content, "").to_string();
+        Ok(multi_line_functions)
+    } 
 }

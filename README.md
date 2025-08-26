@@ -7,9 +7,13 @@
 
 Welcome to the `Arc` project! 👋
 
-`Arc`, short for **A**ccelerated Ma**r**kup Language, is a new, high-performance markup language designed for speed and simplicity, as a modern alternative to Markdown. Built with the power and safety of **Rust** 🦀, Arc aims to provide a robust and efficient way to structure human-oriented content.
+`Arc`, short for **A**ccelerated Ma**r**kup Language, is a new, high-performance markup language designed for speed and
+simplicity, as a modern alternative to Markdown. Built with the power and safety of **Rust** 🦀, Arc aims to provide a
+robust and efficient way to structure human-oriented content.
 
-Markdown is a great tool, but it has its limitations. Including html-resembled content is dangerous, and advance styling such as font size and color is difficult to achieve. `Arc` addresses these issues by providing a safe and extensible markup language.
+Markdown is a great tool, but it has its limitations. Including html-resembled content is dangerous, and advance styling
+such as font size and color is difficult to achieve. `Arc` addresses these issues by providing a safe and extensible
+markup language.
 
 ## 🌟 Features
 
@@ -32,7 +36,9 @@ Hello World.
 Hello World and I can add a <p> tag safely here.
 ```
 
-Notice that the requirement of two spaces at the end of a line to create a new line is gone. `Arc` automatically track for all new line characters and insert `<br />` element accordingly. If you do need to write long strings in multiple lines, use the `\` syntax:
+Notice that the requirement of two spaces at the end of a line to create a new line is gone. `Arc` automatically track
+for all new line characters and insert `<br />` element accordingly. If you do need to write long strings in multiple
+lines, use the `\` syntax:
 
 ```arc
 This is a very long \
@@ -60,18 +66,18 @@ For a comprehensive list of syntax, check out the [syntax](./SYNTAX.md) page.
 
 For now, you can build from source:
 
-1.  Clone the repository:
-    ```zsh
-    git clone [https://github.com/prismelt/arc.git](https://github.com/prismelt/arc.git)
-    ```
-2.  Navigate to the project directory:
-    ```zsh
-    cd arc
-    ```
-3.  Build the project:
-    ```zsh
-    cargo build --release
-    ```
+1. Clone the repository:
+   ```zsh
+   git clone [https://github.com/prismelt/arc.git](https://github.com/prismelt/arc.git)
+   ```
+2. Navigate to the project directory:
+   ```zsh
+   cd arc
+   ```
+3. Build the project:
+   ```zsh
+   cargo build --release
+   ```
 
 ## 💡 CLI tool usage
 
@@ -89,5 +95,27 @@ This project is licensed under the MIT License.
 
 ## 👍 Latest Updates
 
+### Update 0.4.2
+
 - Fix table overflow
-- Default value for arc preview, arc compile and arc build as new.txt
+- Default value for ```arc preview```, ```arc compile``` and ```arc build``` as **new.txt**
+
+### Update 0.4.3 [Aug.25]
+
+- Fix Latex (mjax) font rendering issues
+- Default font to Cosmic Neue
+
+### Update 0.4.4 (big improvements) [Aug.25]
+
+- Update for ```arc preview``` to enable reloading
+- Add default warning when overwriting existing file
+- Add syntax for multi-line functions (macros)
+- Remove Redundant whitespaces in the ```arc compile``` html
+
+### Update 0.4.5 (Planning)
+
+- Improved error message
+- Add support for ce package of Latex (if possible)
+- Minimize ```arc compile``` file size by remove redundant css.
+- Increase the usability of the ```<meta>``` tags.
+- Add --live tag for ```arc preview``` to enable live reloading
